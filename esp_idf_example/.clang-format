@@ -26,7 +26,7 @@ SpaceAfterCStyleCast: true
 
 CommentPragmas: '^[/!]<'
 
-ColumnLimit: 130  
+ColumnLimit: 180  
 WrapComments: true  
 AllowShortCommentsOnASingleLine: true  
 AlignConsecutiveComments: true 

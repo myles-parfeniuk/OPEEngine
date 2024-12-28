@@ -14,3 +14,5 @@ const constexpr uint8_t OPEEconfigCB_QUEUE_SZ =
         15; ///< Size of callback queue, maximum amount of callbacks that can be waiting for execution at any given time.
 
 const constexpr uint16_t OPEEconfigMAX_DATA_WATCH_CNT = 3; ///< Max amount of DataWatch objects that can be created.
+
+const constexpr uint16_t OPEEconfigMAX_DATA_WATCH_STK_SZ = 128; ///< Max size of a singular DataWatch stack.

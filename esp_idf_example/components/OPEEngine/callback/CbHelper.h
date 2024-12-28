@@ -5,7 +5,7 @@
 #include "freertos/queue.h"
 // in-house
 #include "OPEEngineConfig.h"
-#include "CbAllocater.h"
+#include "CbAllocator.h"
 
 template <size_t DWMaxCnt>
 class CbHelper
@@ -50,9 +50,9 @@ class CbHelper
             return true;
         }
 
-        static CbAllocater<DWMaxCnt>& get_allocater()
+        static CbAllocator<DWMaxCnt>& get_allocator()
         {
-            return allocater;
+            return allocator;
         }
 
     private:
@@ -63,7 +63,7 @@ class CbHelper
                 uintptr_t data_addr;
         } cb_queue_item_t;
 
-        inline static CbAllocater<DWMaxCnt> allocater;
+        inline static CbAllocator<DWMaxCnt> allocator;
         inline static TaskHandle_t task_cb_hdl = NULL;
         inline static QueueHandle_t queue_cb_hdl = xQueueCreate(OPEEconfigCB_QUEUE_SZ, sizeof(cb_queue_item_t));
 

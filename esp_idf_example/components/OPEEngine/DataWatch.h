@@ -20,15 +20,15 @@ class DataWatch
         TArg data;
         TArg arg2p;
         uint16_t dw_stk;
-        CbAllocater<DWMaxCnt>& allocater;
+        CbAllocator<DWMaxCnt>& allocator;
 
     public:
         DataWatch(TArg init_data)
             : data(init_data)
             , arg2p(init_data)
-            , allocater(CbHelper<DWMaxCnt>::get_allocater())
+            , allocator(CbHelper<DWMaxCnt>::get_allocator())
         {
-            allocater.template allocate_dw_stk<TArg, DWStkSz>(dw_stk); // argument passing here is gimped, check it
+            allocator.template allocate_dw_stk<TArg, DWStkSz>(dw_stk); 
         }
 
         template <size_t CbWrprMaxSz, typename TLambda>
@@ -42,7 +42,7 @@ class DataWatch
                 CbWrapperDefined<TArg, TCb, CbWrprMaxSz> cb_wrpr(
                         std::forward<TLambda>(lambda)); // create a temp wrapper object on stack to store callback
 
-                if (allocater.allocate_cb(subscribers, sub_count, dw_stk, &cb_wrpr))
+                if (allocator.store_cb(subscribers, sub_count, dw_stk, &cb_wrpr))
                     return true;
             }
 
