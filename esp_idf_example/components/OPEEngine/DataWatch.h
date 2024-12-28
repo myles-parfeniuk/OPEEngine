@@ -3,12 +3,10 @@
 // std lib includes
 #include <cstddef>
 #include <utility>
+#include <iostream>
 
 // OPEEngine includes
 #include "CbHelper.h"
-
-// windows demo only includes
-#include <iostream>
 
 template <typename TArg, size_t DWStkSz, size_t CbMaxCnt, size_t DWMaxCnt>
 class DataWatch
@@ -28,7 +26,7 @@ class DataWatch
             , arg2p(init_data)
             , allocator(CbHelper<DWMaxCnt>::get_allocator())
         {
-            allocator.template allocate_dw_stk<TArg, DWStkSz>(dw_stk); 
+            allocator.template allocate_dw_stk<DWStkSz>(dw_stk); 
         }
 
         template <size_t CbWrprMaxSz, typename TLambda>

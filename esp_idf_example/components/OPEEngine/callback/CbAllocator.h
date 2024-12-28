@@ -17,10 +17,24 @@ class CbAllocator
                 uint16_t cb_pool_addr_ofs; ///< start address of respective DataWatch stack (as offset from start address of cb_pool)
                 uint16_t stk_ptr_ofs;      ///< stack pointer offset (points to next free element in respective DataWatch stack)
                 uint16_t stk_sz;           ///< total allocated stack size for respective DataWatch stack
+
+                dwstk_cb_t()
+                    : cb_pool_addr_ofs(0)
+                    , stk_ptr_ofs(0)
+                    , stk_sz(0)
+                {
+                }
+
+                dwstk_cb_t(uint16_t cb_pool_addr_ofs, uint16_t stk_ptr_ofs, uint16_t stk_sz)
+                    : cb_pool_addr_ofs(cb_pool_addr_ofs)
+                    , stk_ptr_ofs(stk_ptr_ofs)
+                    , stk_sz(stk_sz)
+                {
+                }
         } dwstk_cb_t;
 
         inline static constexpr const char* TAG = "CbAllocator";  ///< Class tag for debug logs.
-        inline static uint8_t cb_pool[OPEEconfigCB_POOL_SZ];      ///< Callback memory pool, contains all data watch stacks, which contain individual callbacks
+        inline static uint8_t cb_pool[OPEEconfigCB_POOL_SZ] = {0U};      ///< Callback memory pool, contains all data watch stacks, which contain individual callbacks
         inline static dwstk_cb_t dw_stk_control_blocks[DWMaxCnt]; ///< DataWatch Stack control blocks (contains context for each DataWatch stack)
         inline static uint16_t dw_count = 0U;                     ///< Total count of allocated DataWatch stacks
         inline static uint16_t allocator_ofs = 0U;                ///< DataWatch stack allocator offset (points to next free element in cb_poo to allocate DataWatch stack)
@@ -54,7 +68,7 @@ class CbAllocator
         {
         }
 
-        template <typename TArg, size_t DWStkSz>
+        template <size_t DWStkSz>
         bool allocate_dw_stk(uint16_t& dw_stk)
         {
 
@@ -113,4 +127,6 @@ class CbAllocator
 
             return false;
         }
+
+        friend class OPEEngineAllocatorTests;
 };

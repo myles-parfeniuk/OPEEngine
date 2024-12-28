@@ -42,8 +42,9 @@ class CbHelper
             for (int i = 0; i < sub_count; i++)
                 if (subscribers[i] != nullptr)
                 {
-                    cb_queue_item_t item2queue = {subscribers[i], arg2p_addr, (i != (sub_count - 1)) ? 0 : data_addr};
-                    if (xQueueSend(queue_cb_hdl, &item2queue, 1 / portTICK_PERIOD_MS) != pdTRUE)
+                    //only pass data address to last subscriber on list such that data is updated after last callback execution
+                    cb_queue_item_t item2queue = {subscribers[i], arg2p_addr, (i != (sub_count - 1)) ? 0 : data_addr}; 
+                    if (xQueueSend(queue_cb_hdl, &item2queue, 0UL) != pdTRUE)
                         return false;
                 }
 

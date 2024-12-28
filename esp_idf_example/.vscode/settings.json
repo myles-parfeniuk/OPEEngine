@@ -1,6 +1,15 @@
 {
     "files.associations": {
         "cstdio": "cpp",
-        "set": "cpp"
+        "set": "cpp",
+        "xmemory": "cpp",
+        "forward_list": "cpp",
+        "list": "cpp",
+        "regex": "cpp",
+        "sstream": "cpp",
+        "vector": "cpp",
+        "xhash": "cpp",
+        "xstring": "cpp",
+        "xtree": "cpp"
     }
 }

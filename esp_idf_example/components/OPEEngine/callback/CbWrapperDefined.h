@@ -25,7 +25,7 @@ class CbWrapperDefined : public CbWrapperGeneric
 
             cb(*arg2p_ptr);
 
-            // last callback in chain of callbacks requested by data watch object
+            // last callback in salvo callbacks requested by data watch object if data_addr != 0
             if (data_addr != 0)
             {
                 // overwrite the data with the new data after all callbacks are finished executing

@@ -9,11 +9,14 @@
 #include "LED.h"
 #include "Button.h"
 #include "SerialService.h"
+#include "test/OPEEngineTestSuite.hpp"
 
 static const constexpr char* TAG = "Main";
 
 extern "C" void app_main(void)
 {
+    //OPEEngineTestSuite::run_all_tests();
+
     static Device d;
     static LED led(d, GPIO_NUM_25);
     static Button button(d, GPIO_NUM_18);
