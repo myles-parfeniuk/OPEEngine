@@ -98,7 +98,15 @@ class PoolManagerTests
             CbPoolManager<TEST_OPEEconfigMAX_DATA_WATCH_CNT>& pool_manager = CbHelper<TEST_OPEEconfigMAX_DATA_WATCH_CNT>::get_manager();
             uint16_t dw_stk_idx = 0;
 
-            pool_manager.template allocate_dw_stk<DWStkSz>(dw_stk_idx);
+            if (!pool_manager.template allocate_dw_stk<DWStkSz>(dw_stk_idx))
+            {
+                OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: allocate_dw_stk() did not return successfully");
+                return false;
+            }
+            else
+            {
+                OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: allocate_dw_stk() allocated %dbytes successfully", DWStkSz);
+            }
 
             // first DataWatch stack allocated should correspond to number 0
             if (dw_stk_idx != 0)
@@ -152,6 +160,23 @@ class PoolManagerTests
             else
             {
                 OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: Allocator offset check.");
+            }
+
+            uint8_t guard_byte_0 = pool_manager.cb_pool[pool_manager.dw_stk_control_blocks[0].cb_pool_addr_ofs + pool_manager.dw_stk_control_blocks[0].stk_sz - 1];
+            uint8_t guard_byte_1 = pool_manager.cb_pool[pool_manager.dw_stk_control_blocks[0].cb_pool_addr_ofs + pool_manager.dw_stk_control_blocks[0].stk_sz - 2];
+            // check guard bytes
+            if ((guard_byte_0 != CbPoolManager<TEST_OPEEconfigMAX_DATA_WATCH_CNT>::DW_STK_GUARD_BYTE) ||
+                    (guard_byte_1 != CbPoolManager<TEST_OPEEconfigMAX_DATA_WATCH_CNT>::DW_STK_GUARD_BYTE))
+            {
+                OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: DWStk guard bytes not detected. Actual: %d %d Expected: %d %d", guard_byte_0, guard_byte_1,
+                        CbPoolManager<TEST_OPEEconfigMAX_DATA_WATCH_CNT>::DW_STK_GUARD_BYTE, CbPoolManager<TEST_OPEEconfigMAX_DATA_WATCH_CNT>::DW_STK_GUARD_BYTE);
+
+                return false;
+            }
+            else
+            {
+                OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: DWStk guard byte check. Actual: %d %d Expected: %d %d", guard_byte_0, guard_byte_1,
+                        CbPoolManager<TEST_OPEEconfigMAX_DATA_WATCH_CNT>::DW_STK_GUARD_BYTE, CbPoolManager<TEST_OPEEconfigMAX_DATA_WATCH_CNT>::DW_STK_GUARD_BYTE);
             }
 
             return true;
@@ -243,7 +268,7 @@ class PoolManagerTests
 
         static bool allocate_multi_dw_stk_test()
         {
-            const constexpr char* TEST_TAG = "dw_stk_ctrl_blks_vals_after_reset_test";
+            const constexpr char* TEST_TAG = "allocate_multi_dw_stk_test";
             enum DWStkSz_t
             {
                 DWStkSz_0 = 32,  // Value at index 0
@@ -256,34 +281,51 @@ class PoolManagerTests
             CbPoolManager<TEST_OPEEconfigMAX_DATA_WATCH_CNT>& pool_manager = CbHelper<TEST_OPEEconfigMAX_DATA_WATCH_CNT>::get_manager();
             uint16_t dw_stk_idx = 0U;
             uint16_t total_mem_occupied = 0U;
+            uint16_t bytes = 0U;
+            bool allocation_success = false;
 
             for (int i = 0; i < TEST_OPEEconfigMAX_DATA_WATCH_CNT; i++)
             {
                 switch (i)
                 {
                     case 0:
-                        pool_manager.template allocate_dw_stk<DWStkSz_0>(dw_stk_idx);
+                        allocation_success = pool_manager.template allocate_dw_stk<DWStkSz_0>(dw_stk_idx);
+                        bytes = DWStkSz_0;
                         break;
 
                     case 1:
-                        pool_manager.template allocate_dw_stk<DWStkSz_1>(dw_stk_idx);
+                        allocation_success = pool_manager.template allocate_dw_stk<DWStkSz_1>(dw_stk_idx);
+                        bytes = DWStkSz_1;
                         break;
 
                     case 2:
-                        pool_manager.template allocate_dw_stk<DWStkSz_2>(dw_stk_idx);
+                        allocation_success = pool_manager.template allocate_dw_stk<DWStkSz_2>(dw_stk_idx);
+                        bytes = DWStkSz_2;
                         break;
 
                     case 3:
-                        pool_manager.template allocate_dw_stk<DWStkSz_3>(dw_stk_idx);
+                        allocation_success = pool_manager.template allocate_dw_stk<DWStkSz_3>(dw_stk_idx);
+                        bytes = DWStkSz_3;
                         break;
 
                     case 4:
-                        pool_manager.template allocate_dw_stk<DWStkSz_4>(dw_stk_idx);
+                        allocation_success = pool_manager.template allocate_dw_stk<DWStkSz_4>(dw_stk_idx);
+                        bytes = DWStkSz_4;
                         break;
 
                     default:
 
-                    break; 
+                        break;
+                }
+
+                if (!allocation_success)
+                {
+                    OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: allocate_dw_stk() did not return successfully");
+                    return false;
+                }
+                else
+                {
+                    OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: allocate_dw_stk() allocated %dbytes successfully", bytes);
                 }
 
                 // DataWatch stack idx should correspond to order in which they were allocated (should increase with each allocation)
@@ -323,7 +365,8 @@ class PoolManagerTests
                 }
 
                 // stack size should be DWStkSz
-                if (pool_manager.dw_stk_control_blocks[i].stk_sz != (i == 0 ? DWStkSz_0 : (i == 1 ? DWStkSz_1 : (i == 2 ? DWStkSz_2 : (i == 3 ? DWStkSz_3 : (i == 4 ? DWStkSz_4 : DWStkSz_0))))))
+                if (pool_manager.dw_stk_control_blocks[i].stk_sz !=
+                        (i == 0 ? DWStkSz_0 : (i == 1 ? DWStkSz_1 : (i == 2 ? DWStkSz_2 : (i == 3 ? DWStkSz_3 : (i == 4 ? DWStkSz_4 : DWStkSz_0))))))
                 {
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: DWStk size within respective dw_stk_control_block not equal to assigned value.");
                 }
@@ -344,8 +387,74 @@ class PoolManagerTests
                 {
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: Allocator offset check. Actual: %d, Expected: %d", pool_manager.allocator_ofs, total_mem_occupied);
                 }
+
+                uint8_t guard_byte_0 = pool_manager.cb_pool[pool_manager.dw_stk_control_blocks[i].cb_pool_addr_ofs + pool_manager.dw_stk_control_blocks[i].stk_sz - 1];
+                uint8_t guard_byte_1 = pool_manager.cb_pool[pool_manager.dw_stk_control_blocks[i].cb_pool_addr_ofs + pool_manager.dw_stk_control_blocks[i].stk_sz - 2];
+                // check guard bytes
+                if ((guard_byte_0 != CbPoolManager<TEST_OPEEconfigMAX_DATA_WATCH_CNT>::DW_STK_GUARD_BYTE) ||
+                        (guard_byte_1 != CbPoolManager<TEST_OPEEconfigMAX_DATA_WATCH_CNT>::DW_STK_GUARD_BYTE))
+                {
+                    OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: DWStk guard bytes not detected. Actual: %d %d Expected: %d %d", guard_byte_0, guard_byte_1,
+                            CbPoolManager<TEST_OPEEconfigMAX_DATA_WATCH_CNT>::DW_STK_GUARD_BYTE, CbPoolManager<TEST_OPEEconfigMAX_DATA_WATCH_CNT>::DW_STK_GUARD_BYTE);
+
+                    return false;
+                }
+                else
+                {
+                    OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: DWStk guard byte check. Actual: %d %d Expected: %d %d", guard_byte_0, guard_byte_1,
+                            CbPoolManager<TEST_OPEEconfigMAX_DATA_WATCH_CNT>::DW_STK_GUARD_BYTE, CbPoolManager<TEST_OPEEconfigMAX_DATA_WATCH_CNT>::DW_STK_GUARD_BYTE);
+                }
             }
 
+            return true;
+        }
+
+        static bool attempt_cb_pool_overflow_test()
+        {
+            const constexpr char* TEST_TAG = "attempt_cb_pool_overflow_test";
+            const constexpr uint16_t DWStkSz = 2 * (OPEEconfigCB_POOL_SZ / TEST_OPEEconfigMAX_DATA_WATCH_CNT); // should be guaranteed to cause invalid write
+
+            CbPoolManager<TEST_OPEEconfigMAX_DATA_WATCH_CNT>& pool_manager = CbHelper<TEST_OPEEconfigMAX_DATA_WATCH_CNT>::get_manager();
+            uint16_t dw_stk_idx = 0U;
+            uint16_t total_mem_occupied = 0U;
+            bool allocation_success = true;
+
+            for (int i = 0; i < TEST_OPEEconfigMAX_DATA_WATCH_CNT; i++)
+            {
+                allocation_success = pool_manager.template allocate_dw_stk<DWStkSz>(dw_stk_idx);
+                total_mem_occupied += DWStkSz;
+
+                if (total_mem_occupied < OPEEconfigCB_POOL_SZ)
+                {
+                    if (!allocation_success)
+                    {
+                        OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: allocate_dw_stk() did not return successfully on valid allocation parameters  (requested %d/%dbytes).",
+                                total_mem_occupied, OPEEconfigCB_POOL_SZ);
+                        return false;
+                    }
+                    else
+                    {
+                        OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: allocate_dw_stk() successfully allocated %d/%dbytes", total_mem_occupied, OPEEconfigCB_POOL_SZ);
+                    }
+                }
+                else
+                {
+                    if (allocation_success)
+                    {
+                        OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: allocate_dw_stk() returned successfully on invalid allocation parameters,  allocated %d/%dbytes ?",
+                                total_mem_occupied, OPEEconfigCB_POOL_SZ);
+                        return false;
+                    }
+                    else
+                    {
+                        OPEEngineTestHelper::print_test_msg(TEST_TAG,
+                                "PASS: allocate_dw_stk() did not return successfully on invalid allocation parameters (requested %d/%dbytes).", total_mem_occupied,
+                                OPEEconfigCB_POOL_SZ);
+                    }
+                }
+            }
+
+            pool_manager.reset();
             return true;
         }
 };
@@ -388,4 +497,9 @@ TEST_CASE("pool_manager_vals_after_dw_stk_allocation_reset_test", "[PoolManagerT
 TEST_CASE("dw_stk_ctrl_blks_vals_after_dw_stk_allocation_after_reset_test", "[PoolManagerTests]")
 {
     TEST_ASSERT_EQUAL_MESSAGE(true, PoolManagerTests::dw_stk_ctrl_blks_vals_after_reset_test(), "FAILED dw_stk_ctrl_blks_vals_after_dw_stk_allocation_after_reset_test");
+}
+
+TEST_CASE("attempt_cb_pool_overflow_test", "[PoolManagerTests]")
+{
+    TEST_ASSERT_EQUAL_MESSAGE(true, PoolManagerTests::attempt_cb_pool_overflow_test(), "FAILED attempt_cb_pool_overflow_test");
 }

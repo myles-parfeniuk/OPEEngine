@@ -1,10 +1,10 @@
 #pragma once
-// std lib 
+// std lib
 #include <cstring>
 #include <cstdio>
-// esp-idf 
+// esp-idf
 #include "esp_log.h"
-// OPEEngine 
+// OPEEngine
 #include "OPEEngineConfig.h"
 #include "DataWatchStackCtrlBlock.h"
 #include "SubscriberCtrlBlock.h"
@@ -14,7 +14,9 @@ template <size_t DWMaxCnt>
 class CbPoolManager
 {
     private:
-        inline static constexpr const char* TAG = "CbPoolManager";             ///< Class tag for debug logs.
+        static constexpr const char* TAG = "CbPoolManager"; ///< Class tag for debug logs.
+        static constexpr const uint8_t DW_STK_GUARD_BYTE = 0xFFU;
+
         inline static uint8_t cb_pool[OPEEconfigCB_POOL_SZ] = {0U};            ///< Callback memory pool, contains all data watch stacks, which contain individual callbacks
         inline static DataWatchStackCtrlBlock dw_stk_control_blocks[DWMaxCnt]; ///< DataWatch Stack control blocks (contains context for each DataWatch stack)
         inline static uint16_t dw_count = 0U;                                  ///< Total count of allocated DataWatch stacks
@@ -61,6 +63,11 @@ class CbPoolManager
                 // ensure max amount of DW objects have not been exceeded
                 if (dw_count < DWMaxCnt)
                 {
+                    // verify the entirety of desired space is free (== 0)
+                    for (int i = allocator_ofs; i < DWStkSz; i++)
+                        if (cb_pool[i] != 0U)
+                            return false;
+
                     // store context for respective dw stack
                     dw_stk_control_blocks[dw_count] = DataWatchStackCtrlBlock(allocator_ofs, 0, DWStkSz);
 
@@ -68,6 +75,10 @@ class CbPoolManager
                     allocator_ofs += DWStkSz;
                     // save dw_stk # to reference for cb allocation
                     dw_stk = dw_count;
+
+                    // insert DwStk guard bytes
+                    cb_pool[dw_stk_control_blocks[dw_count].cb_pool_addr_ofs + DWStkSz - 1] = DW_STK_GUARD_BYTE;
+                    cb_pool[dw_stk_control_blocks[dw_count].cb_pool_addr_ofs + DWStkSz - 2] = DW_STK_GUARD_BYTE;
 
                     dw_count++;
 
