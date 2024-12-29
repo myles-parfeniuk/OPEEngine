@@ -5,7 +5,7 @@
 #include "CbWrapperGeneric.h"
 
 // template derived class that wraps a callback
-template <typename TArg, typename TCb, size_t CbWrprMaxSz>
+template <typename TArg, typename TCb>
 class CbWrapperDefined : public CbWrapperGeneric
 {
     private:

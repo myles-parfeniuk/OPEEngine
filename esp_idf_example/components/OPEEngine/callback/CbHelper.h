@@ -5,7 +5,8 @@
 #include "freertos/queue.h"
 // in-house
 #include "OPEEngineConfig.h"
-#include "CbAllocator.h"
+#include "SubscriberCtrlBlock.h"
+#include "CbPoolManager.h"
 
 template <size_t DWMaxCnt>
 class CbHelper
@@ -37,13 +38,13 @@ class CbHelper
             }
         }
 
-        static bool queue_cbs(CbWrapperGeneric** subscribers, uint8_t sub_count, uintptr_t arg2p_addr, uintptr_t data_addr)
+        static bool queue_cbs(SubscriberCtrlBlock* subscribers, uint8_t sub_count, uintptr_t arg2p_addr, uintptr_t data_addr)
         {
             for (int i = 0; i < sub_count; i++)
-                if (subscribers[i] != nullptr)
+                if (subscribers[i].cb_wrpr != nullptr)
                 {
-                    //only pass data address to last subscriber on list such that data is updated after last callback execution
-                    cb_queue_item_t item2queue = {subscribers[i], arg2p_addr, (i != (sub_count - 1)) ? 0 : data_addr}; 
+                    // only pass data address to last subscriber on list such that data is updated after last callback execution
+                    cb_queue_item_t item2queue = {subscribers[i].cb_wrpr, arg2p_addr, (i != (sub_count - 1)) ? 0 : data_addr};
                     if (xQueueSend(queue_cb_hdl, &item2queue, 0UL) != pdTRUE)
                         return false;
                 }
@@ -51,9 +52,9 @@ class CbHelper
             return true;
         }
 
-        static CbAllocator<DWMaxCnt>& get_allocator()
+        static CbPoolManager<DWMaxCnt>& get_manager()
         {
-            return allocator;
+            return manager;
         }
 
     private:
@@ -64,7 +65,7 @@ class CbHelper
                 uintptr_t data_addr;
         } cb_queue_item_t;
 
-        inline static CbAllocator<DWMaxCnt> allocator;
+        inline static CbPoolManager<DWMaxCnt> manager;
         inline static TaskHandle_t task_cb_hdl = NULL;
         inline static QueueHandle_t queue_cb_hdl = xQueueCreate(OPEEconfigCB_QUEUE_SZ, sizeof(cb_queue_item_t));
 

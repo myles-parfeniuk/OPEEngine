@@ -9,7 +9,7 @@ LED::LED(Device& d, gpio_num_t led_pin)
     state = d.led.state.get();
 
     // subscribe (register callbacks) to relevant data in device model
-    d.usr_button.subscribe<32>(
+    d.usr_button.subscribe<16>(
             [this, &d](button_event_t event)
             {
                 /*this code will be executed whenver a usr_button is set() within the device model*/
@@ -27,7 +27,7 @@ LED::LED(Device& d, gpio_num_t led_pin)
 
                         d.led.pwm_percentage.set(current_pwm_pct);
 
-                        ESP_LOGI(TAG, "callback: SET PWM: %d%%\n\r", current_pwm_pct);
+                        ESP_LOGI(TAG, "callback: SET PWM: %d%%", current_pwm_pct);
                         break;
 
                     case button_event_t::long_press:
@@ -39,7 +39,7 @@ LED::LED(Device& d, gpio_num_t led_pin)
                         else
                             set_pwm(0U);
 
-                        ESP_LOGI(TAG, "callback: SET state: %s\n\r", state ? "on" : "off");
+                        ESP_LOGI(TAG, "callback: SET state: %s", state ? "on" : "off");
 
                         break;
 

@@ -20,8 +20,7 @@ class OPEEngineTestHelper
         static const constexpr char* TAG = "OPEEngineTestHelper";
 
     public:
-
-         /**
+        /**
          * @brief Prints a message during a test.
          *
          * @param TEST_TAG String containing test name.

@@ -15,7 +15,7 @@ static const constexpr char* TAG = "Main";
 
 extern "C" void app_main(void)
 {
-    //OPEEngineTestSuite::run_all_tests();
+    // OPEEngineTestSuite::run_all_tests();
 
     static Device d;
     static LED led(d, GPIO_NUM_25);

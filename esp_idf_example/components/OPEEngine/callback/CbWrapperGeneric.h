@@ -1,4 +1,6 @@
 #pragma once
+// std lib includes
+#include <cstdint>
 
 // base class for callback wrapper
 class CbWrapperGeneric

@@ -4,19 +4,17 @@ SerialService::SerialService(Device& d)
     : d(d)
 {
 
-    d.led.pwm_percentage.subscribe<32>(
+    d.led.pwm_percentage.subscribe<16>(
             [this, &d](uint8_t new_pwm)
             {
-                snprintf(reinterpret_cast<char*>(tx_buffer), sizeof(tx_buffer),
-                        "callback: uart tx current pwm: %d%% new pwm: %d%%", d.led.pwm_percentage.get(), new_pwm);
+                snprintf(reinterpret_cast<char*>(tx_buffer), sizeof(tx_buffer), "callback: uart tx current pwm: %d%% new pwm: %d%%", d.led.pwm_percentage.get(), new_pwm);
                 xTaskNotify(uart_task_hdl, 1, eSetValueWithOverwrite);
             });
 
-    d.led.state.subscribe<24>(
+    d.led.state.subscribe<16>(
             [this](bool new_state)
             {
-                snprintf(reinterpret_cast<char*>(tx_buffer), sizeof(tx_buffer), "callback: uart tx led state: %s",
-                        new_state ? "on" : "off");
+                snprintf(reinterpret_cast<char*>(tx_buffer), sizeof(tx_buffer), "callback: uart tx led state: %s", new_state ? "on" : "off");
                 xTaskNotify(uart_task_hdl, 1, eSetValueWithOverwrite);
             });
 
