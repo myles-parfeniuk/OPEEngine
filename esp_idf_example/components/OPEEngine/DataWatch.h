@@ -1,15 +1,14 @@
 #pragma once
 
-// std lib includes
+// std lib
 #include <cstddef>
 #include <utility>
 #include <iostream>
-
-// OPEEngine includes
+// OPEEngine
 #include "CbHelper.h"
 #include "SubscriberCtrlBlock.h"
 
-template <typename TArg, size_t DWStkSz, size_t CbMaxCnt, size_t DWMaxCnt>
+template <typename TArg, size_t DWStkSz, size_t CbMaxCnt>
 class DataWatch
 {
 
@@ -19,13 +18,13 @@ class DataWatch
         TArg data;
         TArg arg2p;
         uint16_t dw_stk;
-        CbPoolManager<DWMaxCnt>& pool_manager;
+        CbPoolManager<OPEEconfigMAX_DATA_WATCH_CNT>& pool_manager;
 
     public:
         DataWatch(TArg init_data)
             : data(init_data)
             , arg2p(init_data)
-            , pool_manager(CbHelper<DWMaxCnt>::get_manager())
+            , pool_manager(CbHelper<OPEEconfigMAX_DATA_WATCH_CNT>::get_manager())
         {
             pool_manager.template allocate_dw_stk<DWStkSz>(dw_stk);
         }
@@ -53,7 +52,7 @@ class DataWatch
             arg2p = arg;
             const uintptr_t arg2p_ptr = reinterpret_cast<uintptr_t>(&arg2p);
             const uintptr_t data_ptr = reinterpret_cast<uintptr_t>(&data);
-            CbHelper<DWMaxCnt>::queue_cbs(subscribers, sub_count, arg2p_ptr, data_ptr);
+            CbHelper<OPEEconfigMAX_DATA_WATCH_CNT>::queue_cbs(subscribers, sub_count, arg2p_ptr, data_ptr);
         }
 
         TArg get()

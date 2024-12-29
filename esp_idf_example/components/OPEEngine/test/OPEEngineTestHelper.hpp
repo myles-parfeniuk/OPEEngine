@@ -5,8 +5,11 @@
 
 #pragma once
 
+// std lib
 #include <stdio.h>
 #include <string.h>
+#include <stdarg.h>
+// third-party
 #include "unity.h"
 
 /**
@@ -28,10 +31,16 @@ class OPEEngineTestHelper
          *
          * @return void, nothing to return
          */
-        static void print_test_msg(const char* TEST_TAG, const char* msg)
+        static void print_test_msg(const char* TEST_TAG, const char* format, ...)
         {
-            static char msg_buff[100];
-            sprintf(msg_buff, "%s: %s: %s", TAG, TEST_TAG, msg);
+            static char msg_buff[200];
+            va_list args;
+            va_start(args, format);
+
+            snprintf(msg_buff, sizeof(msg_buff), "%s: %s: ", TAG, TEST_TAG);
+            vsnprintf(msg_buff + strlen(msg_buff), sizeof(msg_buff) - strlen(msg_buff), format, args);
+            va_end(args);
+
             UnityPrint(msg_buff);
             UNITY_OUTPUT_CHAR('\n');
             UNITY_OUTPUT_CHAR('\r');

@@ -8,8 +8,10 @@
  */
 #pragma once
 
+// std lib
 #include <stdio.h>
 #include <string.h>
+// third-party
 #include "unity.h"
 
 /**
@@ -47,7 +49,7 @@ class OPEEngineTestSuite
             if (call_unity_end_begin)
                 UNITY_BEGIN();
 
-            unity_run_tests_by_tag("[DWStkAllocationTests]", false);
+            unity_run_tests_by_tag("[PoolManagerTests]", false);
 
             if (call_unity_end_begin)
                 UNITY_END();

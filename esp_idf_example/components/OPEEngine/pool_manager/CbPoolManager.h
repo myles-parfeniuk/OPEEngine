@@ -1,10 +1,10 @@
 #pragma once
-// std lib includes
+// std lib 
 #include <cstring>
 #include <cstdio>
-// esp-idf includes
+// esp-idf 
 #include "esp_log.h"
-// OPEEngine includes
+// OPEEngine 
 #include "OPEEngineConfig.h"
 #include "DataWatchStackCtrlBlock.h"
 #include "SubscriberCtrlBlock.h"
@@ -29,7 +29,18 @@ class CbPoolManager
         template <size_t CbWrprMaxSz>
         static constexpr bool check_dw_stk_overflow(const DataWatchStackCtrlBlock dw_stk_ctrl_blk)
         {
-            return ((dw_stk_ctrl_blk.stk_ptr_ofs + CbWrprMaxSz) < (dw_stk_ctrl_blk.cb_pool_addr_ofs + dw_stk_ctrl_blk.stk_sz));
+            return ((dw_stk_ctrl_blk.cb_pool_addr_ofs + dw_stk_ctrl_blk.stk_ptr_ofs + CbWrprMaxSz) < (dw_stk_ctrl_blk.cb_pool_addr_ofs + dw_stk_ctrl_blk.stk_sz));
+        }
+
+        void reset()
+        {
+            dw_count = 0U;
+            allocator_ofs = 0U;
+
+            for (int i = 0; i < DWMaxCnt; i++)
+                dw_stk_control_blocks[i] = DataWatchStackCtrlBlock();
+
+            memset(cb_pool, 0U, OPEEconfigCB_POOL_SZ);
         }
 
     public:
@@ -51,7 +62,7 @@ class CbPoolManager
                 if (dw_count < DWMaxCnt)
                 {
                     // store context for respective dw stack
-                    dw_stk_control_blocks[dw_count] = DataWatchStackCtrlBlock(allocator_ofs, allocator_ofs, DWStkSz);
+                    dw_stk_control_blocks[dw_count] = DataWatchStackCtrlBlock(allocator_ofs, 0, DWStkSz);
 
                     // increment the datawatch count and allocator offset for next DW registration
                     allocator_ofs += DWStkSz;
@@ -83,7 +94,7 @@ class CbPoolManager
                 if (dw_stk < dw_count) // was dw object correctly registered?
                 {
                     ESP_LOGI(TAG, "CbWrapper Sz: %dbytes", bytes2allocate);
-                    const uint16_t cb_pool_addr_ofs = dw_stk_control_blocks[dw_stk].stk_ptr_ofs;
+                    const uint16_t cb_pool_addr_ofs = dw_stk_control_blocks[dw_stk].cb_pool_addr_ofs + dw_stk_control_blocks[dw_stk].stk_ptr_ofs;
 
                     new (cb_pool + cb_pool_addr_ofs) CbWrapperDefined<TArg, TCb>(*cb_wrpr);
 
@@ -107,5 +118,5 @@ class CbPoolManager
             return false;
         }
 
-        friend class DWStkAllocationTests;
+        friend class PoolManagerTests;
 };

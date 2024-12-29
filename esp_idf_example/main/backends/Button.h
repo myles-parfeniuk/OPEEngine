@@ -1,22 +1,22 @@
 #pragma once
 
-// std lib includes
+// std lib 
 #include <cstdio>
-// esp-idf includes
+// esp-idf 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "driver/gpio.h"
 #include "esp_log.h"
-// OPEEngine includes
+// OPEEngine 
 #include "OPEEDevice.h"
 
 class Button
 {
     public:
-        Button(Device& d, gpio_num_t button_pin);
+        Button(OPEEDevice& d, gpio_num_t button_pin);
 
     private:
-        Device& d;
+        OPEEDevice& d;
 
         gpio_num_t pin = GPIO_NUM_NC;
 

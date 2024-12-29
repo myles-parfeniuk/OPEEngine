@@ -3,7 +3,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/queue.h"
-// in-house
+// OPEEngine
 #include "OPEEngineConfig.h"
 #include "SubscriberCtrlBlock.h"
 #include "CbPoolManager.h"

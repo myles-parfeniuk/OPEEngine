@@ -1,6 +1,6 @@
 #pragma once
 
-// std lib includes
+// std lib 
 #include <stdint.h>
 
 const constexpr uint16_t OPEEconfigCB_POOL_SZ = 512; ///< Size of combined callback storage pool in bytes.

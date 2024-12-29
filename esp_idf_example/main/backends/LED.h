@@ -1,20 +1,20 @@
 #pragma once
-// std lib includes
+// std lib 
 #include <cstdio>
-// esp-idf includes
+// esp-idf 
 #include "driver/gpio.h"
 #include "driver/ledc.h"
 #include "esp_log.h"
-// OPEEngine includes
+// OPEEngine 
 #include "OPEEDevice.h"
 
 class LED
 {
     public:
-        LED(Device& d, gpio_num_t led_pin);
+        LED(OPEEDevice& d, gpio_num_t led_pin);
 
     private:
-        Device& d;
+        OPEEDevice& d;
         gpio_num_t pin = GPIO_NUM_NC;
         uint8_t current_pwm_pct;
         bool state;

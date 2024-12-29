@@ -1,22 +1,22 @@
 #pragma once
-// std lib includes
+// std lib
 #include <cstdio>
 #include <cstring>
 #include <stdio.h>
-// esp-idf includes
+// esp-idf
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/queue.h"
-// OPEEngine includes
+// OPEEngine
 #include "OPEEDevice.h"
 
 class SerialService
 {
     public:
-        SerialService(Device& d);
+        SerialService(OPEEDevice& d);
 
     private:
-        Device& d;
+        OPEEDevice& d;
 
         TaskHandle_t uart_task_hdl;
         QueueHandle_t queue_uart;

@@ -1,6 +1,6 @@
 #include "SerialService.h"
 
-SerialService::SerialService(Device& d)
+SerialService::SerialService(OPEEDevice& d)
     : d(d)
 {
 
