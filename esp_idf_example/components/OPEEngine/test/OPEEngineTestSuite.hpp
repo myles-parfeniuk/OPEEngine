@@ -37,6 +37,7 @@ class OPEEngineTestSuite
         {
             UNITY_BEGIN();
             run_cb_pool_manager_tests(false);
+            run_cb_tests(false);
             UNITY_END();
         }
 
@@ -50,6 +51,23 @@ class OPEEngineTestSuite
                 UNITY_BEGIN();
 
             unity_run_tests_by_tag("[PoolManagerTests]", false);
+
+            if (call_unity_end_begin)
+                UNITY_END();
+
+            print_end_tests_banner(TESTS_TAG);
+        }
+
+        static void run_cb_tests(bool call_unity_end_begin = true)
+        {
+            static const constexpr char* TESTS_TAG = "cb_tests";
+
+            print_begin_tests_banner(TESTS_TAG);
+
+            if (call_unity_end_begin)
+                UNITY_BEGIN();
+
+            unity_run_tests_by_tag("[CallbackTests]", false);
 
             if (call_unity_end_begin)
                 UNITY_END();

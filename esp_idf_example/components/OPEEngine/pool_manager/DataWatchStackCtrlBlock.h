@@ -1,5 +1,5 @@
 #pragma once
-// std lib 
+// std lib
 #include <cstdint>
 
 class DataWatchStackCtrlBlock

@@ -1,7 +1,7 @@
 #pragma once
-// std lib 
+// std lib
 #include <cstring>
-// OPEEngine 
+// OPEEngine
 #include "CbWrapperGeneric.h"
 
 // template derived class that wraps a callback

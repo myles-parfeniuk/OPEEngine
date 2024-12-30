@@ -108,10 +108,10 @@ class CbPoolManager
         template <typename TArg, typename TCb, size_t CbWrprMaxSz>
         bool store_cb(SubscriberCtrlBlock* subscribers, uint8_t& sub_count, const uint16_t dw_stk, CbWrapperDefined<TArg, TCb>* cb_wrpr)
         {
-            const constexpr size_t bytes2allocate = sizeof(CbWrapperDefined<TArg, TCb>);
+            const constexpr size_t data_sz = sizeof(CbWrapperDefined<TArg, TCb>);
 
             // compilation check: does cb size in memory exceed CbWrprMaxSz?
-            SubscriberCtrlBlock::check_cb_wrpr_sz<bytes2allocate, CbWrprMaxSz>();
+            SubscriberCtrlBlock::check_cb_wrpr_sz<data_sz, CbWrprMaxSz>();
 
             // runtime check: will allocating this CbWrpr exceed respective DWStkSz?
             if (check_dw_stk_overflow<CbWrprMaxSz>(dw_stk_control_blocks[dw_stk]))
@@ -119,7 +119,7 @@ class CbPoolManager
 
                 if (dw_stk < dw_count) // was dw object correctly registered?
                 {
-                    ESP_LOGI(TAG, "CbWrapper Sz: %dbytes", bytes2allocate);
+                    ESP_LOGI(TAG, "CbWrapper Sz: %dbytes", data_sz);
                     const uint16_t cb_pool_addr_ofs = dw_stk_control_blocks[dw_stk].cb_pool_addr_ofs + dw_stk_control_blocks[dw_stk].stk_ptr_ofs;
 
                     // verify the entirety of desired space is free (== 0)
@@ -128,8 +128,6 @@ class CbPoolManager
                             return false;
 
                     new (cb_pool + cb_pool_addr_ofs) CbWrapperDefined<TArg, TCb>(*cb_wrpr);
-
-                    const uint16_t data_sz = bytes2allocate;
 
                     // checksum is all elements of serialized calback data XOR'd together
                     const uint8_t checksum = create_checksum(cb_pool_addr_ofs, data_sz);

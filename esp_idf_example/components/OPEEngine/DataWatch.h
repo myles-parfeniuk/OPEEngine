@@ -46,13 +46,13 @@ class DataWatch
             return false;
         }
 
-        void set(TArg arg)
+        bool set(TArg arg)
         {
 
             arg2p = arg;
             const uintptr_t arg2p_ptr = reinterpret_cast<uintptr_t>(&arg2p);
             const uintptr_t data_ptr = reinterpret_cast<uintptr_t>(&data);
-            CbHelper<OPEEconfigMAX_DATA_WATCH_CNT>::queue_cbs(subscribers, sub_count, arg2p_ptr, data_ptr);
+            return CbHelper<OPEEconfigMAX_DATA_WATCH_CNT>::queue_cbs(subscribers, sub_count, arg2p_ptr, data_ptr);
         }
 
         TArg get()
