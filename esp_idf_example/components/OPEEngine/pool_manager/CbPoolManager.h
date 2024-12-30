@@ -89,10 +89,25 @@ class CbPoolManager
             return false;
         }
 
+        static uint8_t create_checksum(const uint16_t cb_pool_addr_ofs, const uint16_t data_sz)
+        {
+            uint8_t checksum = 0U;
+
+            for (int i = cb_pool_addr_ofs; i < (cb_pool_addr_ofs + data_sz); i++)
+                checksum ^= cb_pool[i];
+
+            return checksum;
+        }
+
+        static bool validate_checksum(const SubscriberCtrlBlock ctrl_blk, const uint16_t dw_stk)
+        {
+            uint8_t checksum = create_checksum(ctrl_blk.cb_pool_addr_ofs, ctrl_blk.data_sz);
+            return (checksum == ctrl_blk.checksum);
+        }
+
         template <typename TArg, typename TCb, size_t CbWrprMaxSz>
         bool store_cb(SubscriberCtrlBlock* subscribers, uint8_t& sub_count, const uint16_t dw_stk, CbWrapperDefined<TArg, TCb>* cb_wrpr)
         {
-            // plus one for checksum / guard byte
             const constexpr size_t bytes2allocate = sizeof(CbWrapperDefined<TArg, TCb>);
 
             // compilation check: does cb size in memory exceed CbWrprMaxSz?
@@ -107,12 +122,17 @@ class CbPoolManager
                     ESP_LOGI(TAG, "CbWrapper Sz: %dbytes", bytes2allocate);
                     const uint16_t cb_pool_addr_ofs = dw_stk_control_blocks[dw_stk].cb_pool_addr_ofs + dw_stk_control_blocks[dw_stk].stk_ptr_ofs;
 
+                    // verify the entirety of desired space is free (== 0)
+                    for (int i = cb_pool_addr_ofs; i < (cb_pool_addr_ofs + CbWrprMaxSz); i++)
+                        if (cb_pool[i] != 0)
+                            return false;
+
                     new (cb_pool + cb_pool_addr_ofs) CbWrapperDefined<TArg, TCb>(*cb_wrpr);
 
                     const uint16_t data_sz = bytes2allocate;
 
-                    // checksum is first and last elements of serialized calback XOR'd together
-                    const uint8_t checksum = cb_pool[cb_pool_addr_ofs] ^ cb_pool[cb_pool_addr_ofs + bytes2allocate - 1];
+                    // checksum is all elements of serialized calback data XOR'd together
+                    const uint8_t checksum = create_checksum(cb_pool_addr_ofs, data_sz);
 
                     subscribers[sub_count++] = SubscriberCtrlBlock(cb_pool_addr_ofs, data_sz, checksum,
                             reinterpret_cast<CbWrapperGeneric*>(cb_pool + cb_pool_addr_ofs)); // save pointer to cb from cb_pool
