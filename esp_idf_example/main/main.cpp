@@ -9,7 +9,7 @@
 #include "LED.h"
 #include "Button.h"
 #include "SerialService.h"
-#include "test/OPEEngineTestSuite.hpp"
+#include "test/OPEEngineTestSuite.h"
 
 static const constexpr char* TAG = "Main";
 
