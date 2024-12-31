@@ -40,16 +40,16 @@ void Button::scan_task()
         {
             poll_count++;
 
-            if (poll_count == 3)
+            if (poll_count == 5)
                 d.usr_button.set(button_event_t::long_press);
-            else if (poll_count >= 4)
+            else if (poll_count >= 6)
                 d.usr_button.set(button_event_t::held);
 
             vTaskDelay(POLLING_PERIOD_MS);
 
         } while (gpio_get_level(pin) == 0);
 
-        if (poll_count <= 2)
+        if (poll_count <= 4)
             d.usr_button.set(button_event_t::quick_press);
 
         d.usr_button.set(button_event_t::release);

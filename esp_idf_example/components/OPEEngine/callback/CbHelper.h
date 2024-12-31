@@ -21,6 +21,8 @@ class CbHelper
                 xTaskCreate(cb_task, "cb_tsk", OPEEconfigCB_TASK_STACK_SZ, NULL, OPEEconfigCB_TASK_PRIO, &task_cb_hdl);
                 init = true;
             }
+
+            // manager.reset();
         }
 
         static void cb_task(void* arg)

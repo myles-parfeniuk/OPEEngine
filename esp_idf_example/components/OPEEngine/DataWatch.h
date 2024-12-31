@@ -19,6 +19,7 @@ class DataWatch
         TArg arg2p;
         uint16_t dw_stk;
         CbPoolManager<OPEEconfigMAX_DATA_WATCH_CNT>& pool_manager;
+        OPEEngineRes_t dw_stk_alloc_res;
 
     public:
         DataWatch(TArg init_data)
@@ -26,11 +27,11 @@ class DataWatch
             , arg2p(init_data)
             , pool_manager(CbHelper<OPEEconfigMAX_DATA_WATCH_CNT>::get_manager())
         {
-            pool_manager.template allocate_dw_stk<DWStkSz>(dw_stk);
+            dw_stk_alloc_res = pool_manager.template allocate_dw_stk<DWStkSz>(dw_stk);
         }
 
         template <size_t CbWrprMaxSz, typename TLambda>
-        bool subscribe(TLambda&& lambda)
+        OPEEngineRes_t subscribe(TLambda&& lambda)
         {
             using TCb = std::decay_t<TLambda>; // get the actual type of the lambda by stripping it of references with decay
 
@@ -39,11 +40,10 @@ class DataWatch
             {
                 CbWrapperDefined<TArg, TCb> cb_wrpr(std::forward<TLambda>(lambda)); // create a temp wrapper object on stack to store callback
 
-                if (pool_manager.template store_cb<TArg, TCb, CbWrprMaxSz>(subscribers, sub_count, dw_stk, &cb_wrpr))
-                    return true;
+                return pool_manager.template store_cb<TArg, TCb, CbWrprMaxSz>(subscribers, sub_count, dw_stk, &cb_wrpr);
             }
 
-            return false;
+            return OPEE_MAX_SUB_CNT_EXCEEDED;
         }
 
         bool set(TArg arg)

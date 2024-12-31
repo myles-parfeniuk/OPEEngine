@@ -17,10 +17,12 @@ class PoolManagerTests
 
             uint16_t dw_stk_idx_before_allocation = dw_stk_idx;
             uint16_t allocator_ofs_before_allocation = pool_manager.allocator_ofs;
+            OPEEngineRes_t OPEEres;
 
-            if (!pool_manager.template allocate_dw_stk<DWStkSz>(dw_stk_idx))
+            OPEEres = pool_manager.template allocate_dw_stk<DWStkSz>(dw_stk_idx);
+            if (OPEEres != OPEE_SUCCESS)
             {
-                OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: allocate_dw_stk() did not return successfully");
+                OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: allocate_dw_stk() did not return successfully: %s.", OPEEngineRes_to_str(OPEEres));
                 return false;
             }
             else
@@ -128,9 +130,10 @@ class PoolManagerTests
             uint8_t sub_count_before_allocation = sub_count;
             uint16_t dw_stk_stack_pointer_ofs_before_allocation = pool_manager.dw_stk_control_blocks[dw_stk].stk_ptr_ofs;
 
-            if (!pool_manager.template store_cb<TArg, TCb, CbWrprMaxSz>(subscribers, sub_count, dw_stk, &cb_wrpr))
+            OPEEngineRes_t OPEEres = pool_manager.template store_cb<TArg, TCb, CbWrprMaxSz>(subscribers, sub_count, dw_stk, &cb_wrpr);
+            if (OPEEres != OPEE_SUCCESS)
             {
-                OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: store_cb() failed to return successfully.");
+                OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: store_cb() failed to return successfully: %s.", OPEEngineRes_to_str(OPEEres));
                 return false;
             }
             else
@@ -429,19 +432,20 @@ class PoolManagerTests
             CbPoolManager<TEST_OPEEconfigMAX_DATA_WATCH_CNT>& pool_manager = CbHelper<TEST_OPEEconfigMAX_DATA_WATCH_CNT>::get_manager();
             uint16_t dw_stk_idx = 0U;
             uint16_t total_mem_occupied = 0U;
-            bool allocation_success = true;
+            OPEEngineRes_t OPEEres;
 
             for (int i = 0; i < TEST_OPEEconfigMAX_DATA_WATCH_CNT; i++)
             {
-                allocation_success = pool_manager.template allocate_dw_stk<DWStkSz>(dw_stk_idx);
+                OPEEres = pool_manager.template allocate_dw_stk<DWStkSz>(dw_stk_idx);
                 total_mem_occupied += DWStkSz;
 
                 if (total_mem_occupied < OPEEconfigCB_POOL_SZ)
                 {
-                    if (!allocation_success)
+                    if (OPEEres != OPEE_SUCCESS)
                     {
-                        OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: allocate_dw_stk() did not return successfully on valid allocation parameters  (requested %d/%dbytes).",
-                                total_mem_occupied, OPEEconfigCB_POOL_SZ);
+                        OPEEngineTestHelper::print_test_msg(TEST_TAG,
+                                "FAIL: allocate_dw_stk() did not return successfully on valid allocation parameters  (requested %d/%dbytes): %s.", total_mem_occupied,
+                                OPEEconfigCB_POOL_SZ, OPEEngineRes_to_str(OPEEres));
                         return false;
                     }
                     else
@@ -451,17 +455,17 @@ class PoolManagerTests
                 }
                 else
                 {
-                    if (allocation_success)
+                    if (OPEEres == OPEE_SUCCESS)
                     {
-                        OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: allocate_dw_stk() returned successfully on invalid allocation parameters,  allocated %d/%dbytes ?",
-                                total_mem_occupied, OPEEconfigCB_POOL_SZ);
+                        OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: allocate_dw_stk() returned successfully on invalid allocation parameters,  allocated %d/%dbytes? %s.",
+                                total_mem_occupied, OPEEconfigCB_POOL_SZ, OPEEngineRes_to_str(OPEEres));
                         return false;
                     }
                     else
                     {
                         OPEEngineTestHelper::print_test_msg(TEST_TAG,
-                                "PASS: allocate_dw_stk() did not return successfully on invalid allocation parameters (requested %d/%dbytes).", total_mem_occupied,
-                                OPEEconfigCB_POOL_SZ);
+                                "PASS: allocate_dw_stk() did not return successfully on invalid allocation parameters (requested %d/%dbytes): %s.", total_mem_occupied,
+                                OPEEconfigCB_POOL_SZ, OPEEngineRes_to_str(OPEEres));
                     }
                 }
             }

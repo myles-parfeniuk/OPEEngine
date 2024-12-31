@@ -1,11 +1,11 @@
 #pragma once
-// std lib 
+// std lib
 #include <cstdio>
-// esp-idf 
+// esp-idf
 #include "driver/gpio.h"
 #include "driver/ledc.h"
 #include "esp_log.h"
-// OPEEngine 
+// OPEEngine
 #include "OPEEDevice.h"
 
 class LED

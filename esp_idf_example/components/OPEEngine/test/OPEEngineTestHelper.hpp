@@ -11,6 +11,8 @@
 #include <stdarg.h>
 // third-party
 #include "unity.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
 
 /**
  * @class OPEEngineTestHelper
@@ -21,6 +23,7 @@ class OPEEngineTestHelper
 {
     private:
         static const constexpr char* TAG = "OPEEngineTestHelper";
+        inline static SemaphoreHandle_t print_lock = xSemaphoreCreateMutex();
 
     public:
         /**
@@ -34,6 +37,8 @@ class OPEEngineTestHelper
         static void print_test_msg(const char* TEST_TAG, const char* format, ...)
         {
             static char msg_buff[200];
+
+            xSemaphoreTake(print_lock, portMAX_DELAY);
             va_list args;
             va_start(args, format);
 
@@ -44,5 +49,6 @@ class OPEEngineTestHelper
             UnityPrint(msg_buff);
             UNITY_OUTPUT_CHAR('\n');
             UNITY_OUTPUT_CHAR('\r');
+            xSemaphoreGive(print_lock);
         }
 };

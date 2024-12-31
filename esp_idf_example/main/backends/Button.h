@@ -1,13 +1,13 @@
 #pragma once
 
-// std lib 
+// std lib
 #include <cstdio>
-// esp-idf 
+// esp-idf
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "driver/gpio.h"
 #include "esp_log.h"
-// OPEEngine 
+// OPEEngine
 #include "OPEEDevice.h"
 
 class Button

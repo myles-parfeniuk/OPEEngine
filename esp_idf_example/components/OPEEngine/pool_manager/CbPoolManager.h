@@ -10,6 +10,43 @@
 #include "SubscriberCtrlBlock.h"
 #include "CbWrapperDefined.h"
 
+enum OPEEngineRes_t
+{
+    OPEE_SUCCESS = 0,
+    OPEE_CB_POOL_OVERFLOW,
+    OPEE_MAX_DWSTK_CNT_EXCEEDED,
+    OPEE_DWSTK_OVERFLOW,
+    OPEE_INVALID_DWSTK_IDX,
+    OPEE_CB_POOL_RGN_NOT_EMPTY,
+    OPEE_CB_WRPR_CREATION_FAILED,
+    OPEE_MAX_SUB_CNT_EXCEEDED
+};
+
+constexpr const char* OPEEngineRes_to_str(OPEEngineRes_t res)
+{
+    switch (res)
+    {
+        case OPEE_SUCCESS:
+            return "OPEE_SUCCESS";
+        case OPEE_CB_POOL_OVERFLOW:
+            return "OPEE_CB_POOL_OVERFLOW";
+        case OPEE_MAX_DWSTK_CNT_EXCEEDED:
+            return "OPEE_MAX_DWSTK_CNT_EXCEEDED";
+        case OPEE_DWSTK_OVERFLOW:
+            return "OPEE_DWSTK_OVERFLOW";
+        case OPEE_INVALID_DWSTK_IDX:
+            return "OPEE_INVALID_DWSTK_IDX";
+        case OPEE_CB_POOL_RGN_NOT_EMPTY:
+            return "OPEE_CB_POOL_RGN_NOT_EMPTY";
+        case OPEE_CB_WRPR_CREATION_FAILED:
+            return "OPEE_CB_WRPR_CREATION_FAILED";
+        case OPEE_MAX_SUB_CNT_EXCEEDED:
+            return "OPEE_MAX_SUB_CNT_EXCEEDED";
+        default:
+            return "UNKNOWN_ERROR";
+    }
+}
+
 template <size_t DWMaxCnt>
 class CbPoolManager
 {
@@ -34,6 +71,11 @@ class CbPoolManager
             return ((dw_stk_ctrl_blk.cb_pool_addr_ofs + dw_stk_ctrl_blk.stk_ptr_ofs + CbWrprMaxSz) < (dw_stk_ctrl_blk.cb_pool_addr_ofs + dw_stk_ctrl_blk.stk_sz));
         }
 
+    public:
+        CbPoolManager()
+        {
+        }
+
         void reset()
         {
             dw_count = 0U;
@@ -45,48 +87,41 @@ class CbPoolManager
             memset(cb_pool, 0U, OPEEconfigCB_POOL_SZ);
         }
 
-    public:
-        CbPoolManager()
-        {
-        }
-
         template <size_t DWStkSz>
-        bool allocate_dw_stk(uint16_t& dw_stk)
+        OPEEngineRes_t allocate_dw_stk(uint16_t& dw_stk)
         {
 
             // compilation check: does does DWStkSz exceed exceed max OPEEconfigMAX_DATA_WATCH_STK_SZ?
             DataWatchStackCtrlBlock::check_dw_stk_sz<DWStkSz>();
 
             // runtime check: will allocating this DWStk exceed OPEEconfigCB_POOL_SZ?
-            if (check_cb_pool_overflow<DWStkSz>(DWStkSz + allocator_ofs))
-            {
-                // ensure max amount of DW objects have not been exceeded
-                if (dw_count < DWMaxCnt)
-                {
-                    // verify the entirety of desired space is free (== 0)
-                    for (int i = allocator_ofs; i < DWStkSz; i++)
-                        if (cb_pool[i] != 0U)
-                            return false;
+            if (!check_cb_pool_overflow<DWStkSz>(DWStkSz + allocator_ofs))
+                return OPEE_CB_POOL_OVERFLOW;
 
-                    // store context for respective dw stack
-                    dw_stk_control_blocks[dw_count] = DataWatchStackCtrlBlock(allocator_ofs, 0, DWStkSz);
+            // ensure max amount of DW objects have not been exceeded
+            if (dw_count >= DWMaxCnt)
+                return OPEE_MAX_DWSTK_CNT_EXCEEDED;
 
-                    // increment the datawatch count and allocator offset for next DW registration
-                    allocator_ofs += DWStkSz;
-                    // save dw_stk # to reference for cb allocation
-                    dw_stk = dw_count;
+            // verify the entirety of desired space is free (== 0)
+            for (int i = allocator_ofs; i < DWStkSz; i++)
+                if (cb_pool[i] != 0U)
+                    return OPEE_CB_POOL_RGN_NOT_EMPTY;
 
-                    // insert DwStk guard bytes
-                    cb_pool[dw_stk_control_blocks[dw_count].cb_pool_addr_ofs + DWStkSz - 1] = DW_STK_GUARD_BYTE;
-                    cb_pool[dw_stk_control_blocks[dw_count].cb_pool_addr_ofs + DWStkSz - 2] = DW_STK_GUARD_BYTE;
+            // store context for respective dw stack
+            dw_stk_control_blocks[dw_count] = DataWatchStackCtrlBlock(allocator_ofs, 0, DWStkSz);
 
-                    dw_count++;
+            // increment the datawatch count and allocator offset for next DW registration
+            allocator_ofs += DWStkSz;
+            // save dw_stk # to reference for cb allocation
+            dw_stk = dw_count;
 
-                    return true;
-                }
-            }
+            // insert DwStk guard bytes
+            cb_pool[dw_stk_control_blocks[dw_count].cb_pool_addr_ofs + DWStkSz - 1] = DW_STK_GUARD_BYTE;
+            cb_pool[dw_stk_control_blocks[dw_count].cb_pool_addr_ofs + DWStkSz - 2] = DW_STK_GUARD_BYTE;
 
-            return false;
+            dw_count++;
+
+            return OPEE_SUCCESS;
         }
 
         static uint8_t create_checksum(const uint16_t cb_pool_addr_ofs, const uint16_t data_sz)
@@ -106,7 +141,7 @@ class CbPoolManager
         }
 
         template <typename TArg, typename TCb, size_t CbWrprMaxSz>
-        bool store_cb(SubscriberCtrlBlock* subscribers, uint8_t& sub_count, const uint16_t dw_stk, CbWrapperDefined<TArg, TCb>* cb_wrpr)
+        OPEEngineRes_t store_cb(SubscriberCtrlBlock* subscribers, uint8_t& sub_count, const uint16_t dw_stk, CbWrapperDefined<TArg, TCb>* cb_wrpr)
         {
             const constexpr size_t data_sz = sizeof(CbWrapperDefined<TArg, TCb>);
 
@@ -114,37 +149,37 @@ class CbPoolManager
             SubscriberCtrlBlock::check_cb_wrpr_sz<data_sz, CbWrprMaxSz>();
 
             // runtime check: will allocating this CbWrpr exceed respective DWStkSz?
-            if (check_dw_stk_overflow<CbWrprMaxSz>(dw_stk_control_blocks[dw_stk]))
-            {
+            if (!check_dw_stk_overflow<CbWrprMaxSz>(dw_stk_control_blocks[dw_stk]))
+                return OPEE_DWSTK_OVERFLOW;
 
-                if (dw_stk < dw_count) // was dw object correctly registered?
-                {
-                    ESP_LOGI(TAG, "CbWrapper Sz: %dbytes", data_sz);
-                    const uint16_t cb_pool_addr_ofs = dw_stk_control_blocks[dw_stk].cb_pool_addr_ofs + dw_stk_control_blocks[dw_stk].stk_ptr_ofs;
+            if (dw_stk >= dw_count)
+                return OPEE_INVALID_DWSTK_IDX;
 
-                    // verify the entirety of desired space is free (== 0)
-                    for (int i = cb_pool_addr_ofs; i < (cb_pool_addr_ofs + CbWrprMaxSz); i++)
-                        if (cb_pool[i] != 0)
-                            return false;
+            ESP_LOGI(TAG, "CbWrapper Sz: %dbytes", data_sz);
+            const uint16_t cb_pool_addr_ofs = dw_stk_control_blocks[dw_stk].cb_pool_addr_ofs + dw_stk_control_blocks[dw_stk].stk_ptr_ofs;
 
-                    new (cb_pool + cb_pool_addr_ofs) CbWrapperDefined<TArg, TCb>(*cb_wrpr);
+            // verify the entirety of desired space is free (== 0)
+            for (int i = cb_pool_addr_ofs; i < (cb_pool_addr_ofs + CbWrprMaxSz); i++)
+                if (cb_pool[i] != 0)
+                    return OPEE_CB_POOL_RGN_NOT_EMPTY;
 
-                    // checksum is all elements of serialized calback data XOR'd together
-                    const uint8_t checksum = create_checksum(cb_pool_addr_ofs, data_sz);
+            new (cb_pool + cb_pool_addr_ofs) CbWrapperDefined<TArg, TCb>(*cb_wrpr);
 
-                    subscribers[sub_count++] = SubscriberCtrlBlock(cb_pool_addr_ofs, data_sz, checksum,
-                            reinterpret_cast<CbWrapperGeneric*>(cb_pool + cb_pool_addr_ofs)); // save pointer to cb from cb_pool
+            // checksum is all elements of serialized calback data XOR'd together
+            const uint8_t checksum = create_checksum(cb_pool_addr_ofs, data_sz);
 
-                    // store checksum as guard byte at cb wrapper boundry
-                    cb_pool[cb_pool_addr_ofs + CbWrprMaxSz - 1] = checksum;
+            subscribers[sub_count++] = SubscriberCtrlBlock(cb_pool_addr_ofs, data_sz, checksum,
+                    reinterpret_cast<CbWrapperGeneric*>(cb_pool + cb_pool_addr_ofs)); // save pointer to cb from cb_pool
 
-                    dw_stk_control_blocks[dw_stk].stk_ptr_ofs += CbWrprMaxSz; // increment respective stack pointer to next free chunk
+            if (subscribers[sub_count - 1].cb_wrpr == nullptr)
+                return OPEE_CB_WRPR_CREATION_FAILED;
 
-                    return true;
-                }
-            }
+            // store checksum as guard byte at cb wrapper boundry
+            cb_pool[cb_pool_addr_ofs + CbWrprMaxSz - 1] = checksum;
 
-            return false;
+            dw_stk_control_blocks[dw_stk].stk_ptr_ofs += CbWrprMaxSz; // increment respective stack pointer to next free chunk
+
+            return OPEE_SUCCESS;
         }
 
         friend class PoolManagerTests;
