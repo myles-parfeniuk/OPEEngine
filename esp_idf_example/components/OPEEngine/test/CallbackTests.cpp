@@ -18,10 +18,9 @@ namespace opee
             {
                 const constexpr char* TEST_TAG = "single_cb_test";
 
-                bool cb_executed = false;
-                SemaphoreHandle_t sem = xSemaphoreCreateBinary();
+                const constexpr TickType_t CB_EXECUTION_TIMEOUT_MS = 5UL / portTICK_PERIOD_MS;
 
-                TickType_t CB_EXECUTION_TIMEOUT_MS = 5UL / portTICK_PERIOD_MS;
+                SemaphoreHandle_t sem = xSemaphoreCreateBinary();
 
                 opee::DataWatch<bool, 32, 1> data_to_set(false);
                 opee::CbHelper<OPEEconfigMAX_DATA_WATCH_CNT>::init();
@@ -36,12 +35,7 @@ namespace opee
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: DataWatch data initial value check.");
                 }
 
-                OPEEngineRes_t OPEEres = data_to_set.subscribe<16>(
-                        [&sem, &cb_executed](bool new_data)
-                        {
-                            cb_executed = true;
-                            xSemaphoreGive(sem);
-                        });
+                OPEEngineRes_t OPEEres = data_to_set.subscribe<16>([&sem](bool new_data) { xSemaphoreGive(sem); });
 
                 if (OPEEres != OPEE_OK)
                 {
@@ -63,9 +57,7 @@ namespace opee
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: set data & queue cb check.");
                 }
 
-                xSemaphoreTake(sem, CB_EXECUTION_TIMEOUT_MS);
-
-                if (cb_executed != true)
+                if (xSemaphoreTake(sem, CB_EXECUTION_TIMEOUT_MS) != pdTRUE)
                 {
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: callback never executed");
                     return false;
@@ -135,7 +127,7 @@ namespace opee
                             OPEEngineTestHelper::print_test_msg(TEST_TAG, "CB_2 executed...");
                         });
 
-                for (opee_int_t i = 0; i < 3; i++)
+                for (opee_ssize_t i = 0; i < 3; i++)
                 {
                     if (OPEEres[i] != OPEE_OK)
                     {
@@ -269,9 +261,9 @@ namespace opee
             {
                 const constexpr char* TEST_TAG = "self_set_test";
 
-                SemaphoreHandle_t sem = xSemaphoreCreateCounting(2, 2);
+                const constexpr TickType_t CB_EXECUTION_TIMEOUT_MS = 5UL / portTICK_PERIOD_MS;
 
-                TickType_t CB_EXECUTION_TIMEOUT_MS = 5UL / portTICK_PERIOD_MS;
+                SemaphoreHandle_t sem = xSemaphoreCreateCounting(2, 2);
 
                 opee::DataWatch<opee_uint8_t, 32, 1> data_to_set(0U);
                 opee::CbHelper<OPEEconfigMAX_DATA_WATCH_CNT>::init();
@@ -368,9 +360,9 @@ namespace opee
             {
                 const constexpr char* TEST_TAG = "data_is_set_after_cbs_test";
 
-                SemaphoreHandle_t sem = xSemaphoreCreateCounting(2, 2);
+                const constexpr TickType_t CB_EXECUTION_TIMEOUT_MS = 5UL / portTICK_PERIOD_MS;
 
-                TickType_t CB_EXECUTION_TIMEOUT_MS = 5UL / portTICK_PERIOD_MS;
+                SemaphoreHandle_t sem = xSemaphoreCreateCounting(2, 2);
 
                 opee::DataWatch<opee_uint8_t, 32, 1> data_to_set(0U);
                 opee::CbHelper<OPEEconfigMAX_DATA_WATCH_CNT>::init();

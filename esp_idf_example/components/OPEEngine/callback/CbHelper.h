@@ -43,7 +43,7 @@ namespace opee
 
             static OPEEngineRes_t queue_cbs(SubscriberCtrlBlock* subscribers, opee_uint8_t sub_count, opee_uintptr_t arg2p_addr, opee_uintptr_t data_addr)
             {
-                for (opee_int_t i = 0; i < sub_count; i++)
+                for (opee_ssize_t i = 0; i < sub_count; i++)
                     if (subscribers[i].cb_wrpr != nullptr)
                     {
                         // skip this callback if muted

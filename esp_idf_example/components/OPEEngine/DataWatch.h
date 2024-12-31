@@ -21,7 +21,7 @@ namespace opee
             opee_uint8_t sub_count = 0;
             TArg data;
             TArg arg2p;
-            opee_uint_t dw_stk;
+            opee_size_t dw_stk;
             CbPoolManager<OPEEconfigMAX_DATA_WATCH_CNT>& pool_manager;
             OPEEngineRes_t dw_stk_alloc_res = OPEE_DW_STK_NOT_INIT;
 

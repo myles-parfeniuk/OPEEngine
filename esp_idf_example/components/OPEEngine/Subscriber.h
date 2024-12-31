@@ -40,6 +40,11 @@ namespace opee
                 _ctrl_blk->muted = false;
             }
 
+            bool validate_checksum()
+            {
+                return SubscriberCtrlBlock::validate_checksum(*_ctrl_blk);
+            }
+
         private:
             SubscriberCtrlBlock* _ctrl_blk;
             opee_uintptr_t arg2p_addr;

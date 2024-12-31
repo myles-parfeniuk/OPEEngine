@@ -5,6 +5,8 @@ using opee_uint_t = uint16_t;
 using opee_int_t = int16_t;
 using opee_uintl_t = uint32_t;
 using opee_intl_t = int32_t;
+using opee_size_t = uint32_t;
+using opee_ssize_t = int32_t;
 using opee_uintptr_t = uintptr_t;
 
 enum OPEEngineRes_t
