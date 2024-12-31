@@ -14,7 +14,7 @@ namespace opee
             {
             }
 
-            Subscriber(SubscriberCtrlBlock* _ctrl_blk, uintptr_t arg2p_addr)
+            Subscriber(SubscriberCtrlBlock* _ctrl_blk, opee_uintptr_t arg2p_addr)
                 : _ctrl_blk(_ctrl_blk)
                 , arg2p_addr(arg2p_addr)
             {
@@ -42,6 +42,6 @@ namespace opee
 
         private:
             SubscriberCtrlBlock* _ctrl_blk;
-            uintptr_t arg2p_addr;
+            opee_uintptr_t arg2p_addr;
     };
 } // namespace opee

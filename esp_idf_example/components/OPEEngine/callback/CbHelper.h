@@ -24,7 +24,6 @@ namespace opee
                     xTaskCreate(cb_task, "cb_tsk", OPEEconfigCB_TASK_STACK_SZ, NULL, OPEEconfigCB_TASK_PRIO, &task_cb_hdl);
                     init = true;
                 }
-
             }
 
             static void cb_task(void* arg)
@@ -42,9 +41,9 @@ namespace opee
                 }
             }
 
-            static bool queue_cbs(SubscriberCtrlBlock* subscribers, uint8_t sub_count, uintptr_t arg2p_addr, uintptr_t data_addr)
+            static OPEEngineRes_t queue_cbs(SubscriberCtrlBlock* subscribers, opee_uint8_t sub_count, opee_uintptr_t arg2p_addr, opee_uintptr_t data_addr)
             {
-                for (int i = 0; i < sub_count; i++)
+                for (opee_int_t i = 0; i < sub_count; i++)
                     if (subscribers[i].cb_wrpr != nullptr)
                     {
                         // skip this callback if muted
@@ -54,10 +53,10 @@ namespace opee
                         // only pass data address to last subscriber on list such that data is updated after last callback execution
                         cb_queue_item_t item2queue = {subscribers[i].cb_wrpr, arg2p_addr, (i != (sub_count - 1)) ? 0 : data_addr};
                         if (xQueueSend(queue_cb_hdl, &item2queue, 0UL) != pdTRUE)
-                            return false;
+                            return OPEE_CB_QUEUE_FULL;
                     }
 
-                return true;
+                return OPEE_OK;
             }
 
             static CbPoolManager<DWMaxCnt>& get_manager()
@@ -69,8 +68,8 @@ namespace opee
             typedef struct cb_queue_item_t
             {
                     CbWrapperGeneric* cb;
-                    uintptr_t arg2p_addr;
-                    uintptr_t data_addr;
+                    opee_uintptr_t arg2p_addr;
+                    opee_uintptr_t data_addr;
             } cb_queue_item_t;
 
             inline static CbPoolManager<DWMaxCnt> manager;

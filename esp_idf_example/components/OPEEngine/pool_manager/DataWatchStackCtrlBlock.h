@@ -14,7 +14,7 @@ namespace opee
             {
             }
 
-            DataWatchStackCtrlBlock(uint16_t cb_pool_addr_ofs, uint16_t stk_ptr_ofs, uint16_t stk_sz)
+            DataWatchStackCtrlBlock(opee_uint_t cb_pool_addr_ofs, opee_uint_t stk_ptr_ofs, opee_uint_t stk_sz)
                 : cb_pool_addr_ofs(cb_pool_addr_ofs)
                 , stk_ptr_ofs(stk_ptr_ofs)
                 , stk_sz(stk_sz)
@@ -27,8 +27,8 @@ namespace opee
                 static_assert(DWStkSz <= OPEEconfigMAX_DATA_WATCH_STK_SZ, "Max DataWatch stack size exceeded. Increase OPEEconfigMAX_DW_STK_SZ or decrease DataWatch stack size.");
             }
 
-            uint16_t cb_pool_addr_ofs; ///< start address of respective DataWatch stack (as offset from start address of cb_pool)
-            uint16_t stk_ptr_ofs;      ///< stack pointer offset (points to next free element in respective DataWatch stack)
-            uint16_t stk_sz;           ///< total allocated stack size for respective DataWatch stack
+            opee_uint_t cb_pool_addr_ofs; ///< start address of respective DataWatch stack (as offset from start address of cb_pool)
+            opee_uint_t stk_ptr_ofs;      ///< stack pointer offset (points to next free element in respective DataWatch stack)
+            opee_uint_t stk_sz;           ///< total allocated stack size for respective DataWatch stack
     };
 } // namespace opee

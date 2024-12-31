@@ -53,7 +53,7 @@ namespace opee
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS:  successfully subscribed callback.");
                 }
 
-                if (!data_to_set.set(true))
+                if (data_to_set.set(true) != OPEE_OK)
                 {
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL:  set() did not return successfully.");
                     return false;
@@ -135,7 +135,7 @@ namespace opee
                             OPEEngineTestHelper::print_test_msg(TEST_TAG, "CB_2 executed...");
                         });
 
-                for (int i = 0; i < 3; i++)
+                for (opee_int_t i = 0; i < 3; i++)
                 {
                     if (OPEEres[i] != OPEE_OK)
                     {
@@ -146,7 +146,7 @@ namespace opee
 
                 OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS:  sub check.");
 
-                if (!data_to_set.set(true))
+                if (data_to_set.set(true) != OPEE_OK)
                 {
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL:  set() did not return successfully.");
                     return false;
@@ -265,6 +265,183 @@ namespace opee
                 return true;
             }
 
+            static bool self_set_test()
+            {
+                const constexpr char* TEST_TAG = "self_set_test";
+
+                SemaphoreHandle_t sem = xSemaphoreCreateCounting(2, 2);
+
+                TickType_t CB_EXECUTION_TIMEOUT_MS = 5UL / portTICK_PERIOD_MS;
+
+                opee::DataWatch<opee_uint8_t, 32, 1> data_to_set(0U);
+                opee::CbHelper<OPEEconfigMAX_DATA_WATCH_CNT>::init();
+
+                if (data_to_set.get() != 0U)
+                {
+                    OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: incorrect inital data in DataWatch object.");
+                    return false;
+                }
+                else
+                {
+                    OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: DataWatch data initial value check.");
+                }
+
+                OPEEngineRes_t OPEEres = data_to_set.subscribe<16>(
+                        [&data_to_set, &sem](opee_uint8_t new_data)
+                        {
+                            static opee_uint8_t execution_count = 0U;
+
+                            execution_count++;
+
+                            if (execution_count == new_data)
+                            {
+                                OPEEngineTestHelper::print_test_msg(TEST_TAG, "Cb Executed: new_data: %d", new_data);
+
+                                if (data_to_set.get() != 2U)
+                                {
+                                    if (data_to_set.set(2U) == OPEE_OK) // execute callback "recursively" (not actually, cb should be invoked from separate task)
+                                        xSemaphoreGive(sem);
+                                }
+                                else
+                                {
+                                    xSemaphoreGive(sem);
+                                }
+                            }
+                        });
+
+                if (OPEEres != OPEE_OK)
+                {
+                    OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL:  subscribe() did not return successfully: %s.", OPEEngineRes_to_str(OPEEres));
+                    return false;
+                }
+                else
+                {
+                    OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS:  successfully subscribed callback.");
+                }
+
+                if (data_to_set.set(1U) != OPEE_OK)
+                {
+                    OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL:  set() did not return successfully.");
+                    return false;
+                }
+                else
+                {
+                    OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: set data & queue cb check.");
+                }
+
+                if (xSemaphoreTake(sem, CB_EXECUTION_TIMEOUT_MS) != pdTRUE)
+                {
+                    OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: first callback execution not detected");
+                    return false;
+                }
+                else
+                {
+                    OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: cb execution check 1.");
+                }
+
+                if (xSemaphoreTake(sem, CB_EXECUTION_TIMEOUT_MS) != pdTRUE)
+                {
+                    OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: second callback execution not detected");
+                    return false;
+                }
+                else
+                {
+                    OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: cb execution check 2.");
+                }
+
+                if (data_to_set.get() != 2U)
+                {
+                    OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: incorrect data after callback execution");
+                    return false;
+                }
+                else
+                {
+                    OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: data check.");
+                }
+
+                vSemaphoreDelete(sem);
+
+                return true;
+            }
+
+            static bool data_is_set_after_cbs_test()
+            {
+                const constexpr char* TEST_TAG = "data_is_set_after_cbs_test";
+
+                SemaphoreHandle_t sem = xSemaphoreCreateCounting(2, 2);
+
+                TickType_t CB_EXECUTION_TIMEOUT_MS = 5UL / portTICK_PERIOD_MS;
+
+                opee::DataWatch<opee_uint8_t, 32, 1> data_to_set(0U);
+                opee::CbHelper<OPEEconfigMAX_DATA_WATCH_CNT>::init();
+
+                if (data_to_set.get() != 0U)
+                {
+                    OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: incorrect inital data in DataWatch object.");
+                    return false;
+                }
+                else
+                {
+                    OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: DataWatch data initial value check.");
+                }
+
+                OPEEngineRes_t OPEEres = data_to_set.subscribe<16>(
+                        [&data_to_set, &sem](opee_uint8_t new_data)
+                        {
+                            opee_uint8_t current_data = data_to_set.get();
+
+                            OPEEngineTestHelper::print_test_msg(TEST_TAG, "Cb Executed: current_data: %d new_data: %d", current_data, new_data);
+                            if ((current_data == 0U) && (new_data == 1U))
+                            {
+                                xSemaphoreGive(sem);
+                            }
+                        });
+
+                if (OPEEres != OPEE_OK)
+                {
+                    OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL:  subscribe() did not return successfully: %s.", OPEEngineRes_to_str(OPEEres));
+                    return false;
+                }
+                else
+                {
+                    OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS:  successfully subscribed callback.");
+                }
+
+                if (data_to_set.set(1U) != OPEE_OK)
+                {
+                    OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL:  set() did not return successfully.");
+                    return false;
+                }
+                else
+                {
+                    OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: set data & queue cb check.");
+                }
+
+                if (xSemaphoreTake(sem, CB_EXECUTION_TIMEOUT_MS) != pdTRUE)
+                {
+                    OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: callback execution not detected");
+                    return false;
+                }
+                else
+                {
+                    OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: cb execution check.");
+                }
+
+                if (data_to_set.get() != 1U)
+                {
+                    OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: incorrect data after callback execution");
+                    return false;
+                }
+                else
+                {
+                    OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: data check.");
+                }
+
+                vSemaphoreDelete(sem);
+
+                return true;
+            }
+
         private:
             typedef struct multi_task_cb_test_task_ctx_t
             {
@@ -338,6 +515,7 @@ namespace opee
                 vTaskDelete(NULL);
             }
     };
+
 } // namespace opee
 
 TEST_CASE("single_cb_test", "[CallbackTests]")
@@ -353,4 +531,14 @@ TEST_CASE("multi_cb_test", "[CallbackTests]")
 TEST_CASE("multi_task_cb_test", "[CallbackTests]")
 {
     TEST_ASSERT_EQUAL_MESSAGE(true, opee::CallbackTests::multi_task_cb_test(), "FAILED multi_task_cb_test");
+}
+
+TEST_CASE("self_set_test", "[CallbackTests]")
+{
+    TEST_ASSERT_EQUAL_MESSAGE(true, opee::CallbackTests::self_set_test(), "FAILED self_set_test");
+}
+
+TEST_CASE("data_is_set_after_cbs_test", "[CallbackTests]")
+{
+    TEST_ASSERT_EQUAL_MESSAGE(true, opee::CallbackTests::data_is_set_after_cbs_test(), "FAILED data_is_set_after_cbs_test");
 }

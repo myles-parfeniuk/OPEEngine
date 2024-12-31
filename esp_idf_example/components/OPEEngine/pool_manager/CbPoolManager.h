@@ -18,15 +18,15 @@ namespace opee
     {
         private:
             static constexpr const char* TAG = "CbPoolManager"; ///< Class tag for debug logs.
-            static constexpr const uint8_t DW_STK_GUARD_BYTE = 0xFFU;
+            static constexpr const opee_uint8_t DW_STK_GUARD_BYTE = 0xFFU;
 
-            inline static uint8_t cb_pool[OPEEconfigCB_POOL_SZ] = {0U};            ///< Callback memory pool, contains all data watch stacks, which contain individual callbacks
+            inline static opee_uint8_t cb_pool[OPEEconfigCB_POOL_SZ] = {0U};       ///< Callback memory pool, contains all data watch stacks, which contain individual callbacks
             inline static DataWatchStackCtrlBlock dw_stk_control_blocks[DWMaxCnt]; ///< DataWatch Stack control blocks (contains context for each DataWatch stack)
-            inline static uint16_t dw_count = 0U;                                  ///< Total count of allocated DataWatch stacks
-            inline static uint16_t allocator_ofs = 0U; ///< DataWatch stack allocator offset (points to next free element in cb_poo to allocate DataWatch stack)
+            inline static opee_uint_t dw_count = 0U;                               ///< Total count of allocated DataWatch stacks
+            inline static opee_uint_t allocator_ofs = 0U; ///< DataWatch stack allocator offset (points to next free element in cb_poo to allocate DataWatch stack)
 
             template <size_t DWStkSz>
-            static constexpr bool check_cb_pool_overflow(const uint16_t next_allocator_ofs)
+            static constexpr bool check_cb_pool_overflow(const opee_uint_t next_allocator_ofs)
             {
                 return (next_allocator_ofs < OPEEconfigCB_POOL_SZ);
             }
@@ -47,14 +47,14 @@ namespace opee
                 dw_count = 0U;
                 allocator_ofs = 0U;
 
-                for (int i = 0; i < DWMaxCnt; i++)
+                for (opee_int_t i = 0; i < DWMaxCnt; i++)
                     dw_stk_control_blocks[i] = DataWatchStackCtrlBlock();
 
                 memset(cb_pool, 0U, OPEEconfigCB_POOL_SZ);
             }
 
             template <size_t DWStkSz>
-            OPEEngineRes_t allocate_dw_stk(uint16_t& dw_stk)
+            OPEEngineRes_t allocate_dw_stk(opee_uint_t& dw_stk)
             {
 
                 // compilation check: does does DWStkSz exceed exceed max OPEEconfigMAX_DATA_WATCH_STK_SZ?
@@ -69,7 +69,7 @@ namespace opee
                     return OPEE_MAX_DWSTK_CNT_EXCEEDED;
 
                 // verify the entirety of desired space is free (== 0)
-                for (int i = allocator_ofs; i < DWStkSz; i++)
+                for (opee_int_t i = allocator_ofs; i < DWStkSz; i++)
                     if (cb_pool[i] != 0U)
                         return OPEE_CB_POOL_RGN_NOT_EMPTY;
 
@@ -90,24 +90,24 @@ namespace opee
                 return OPEE_OK;
             }
 
-            static uint8_t create_checksum(const uint16_t cb_pool_addr_ofs, const uint16_t data_sz)
+            static opee_uint8_t create_checksum(const opee_uint_t cb_pool_addr_ofs, const opee_uint_t data_sz)
             {
-                uint8_t checksum = 0U;
+                opee_uint8_t checksum = 0U;
 
-                for (int i = cb_pool_addr_ofs; i < (cb_pool_addr_ofs + data_sz); i++)
+                for (opee_int_t i = cb_pool_addr_ofs; i < (cb_pool_addr_ofs + data_sz); i++)
                     checksum ^= cb_pool[i];
 
                 return checksum;
             }
 
-            static bool validate_checksum(const SubscriberCtrlBlock ctrl_blk, const uint16_t dw_stk)
+            static bool validate_checksum(const SubscriberCtrlBlock ctrl_blk, const opee_uint_t dw_stk)
             {
-                uint8_t checksum = create_checksum(ctrl_blk.cb_pool_addr_ofs, ctrl_blk.data_sz);
+                opee_uint8_t checksum = create_checksum(ctrl_blk.cb_pool_addr_ofs, ctrl_blk.data_sz);
                 return (checksum == ctrl_blk.checksum);
             }
 
             template <typename TArg, typename TCb, size_t CbWrprMaxSz>
-            OPEEngineRes_t store_cb(SubscriberCtrlBlock* subscribers, uint8_t& sub_count, const uint16_t dw_stk, CbWrapperDefined<TArg, TCb>* cb_wrpr)
+            OPEEngineRes_t store_cb(SubscriberCtrlBlock* subscribers, opee_uint8_t& sub_count, const opee_uint_t dw_stk, CbWrapperDefined<TArg, TCb>* cb_wrpr)
             {
                 const constexpr size_t data_sz = sizeof(CbWrapperDefined<TArg, TCb>);
 
@@ -122,17 +122,17 @@ namespace opee
                     return OPEE_INVALID_DWSTK_IDX;
 
                 ESP_LOGI(TAG, "CbWrapper Sz: %dbytes", data_sz);
-                const uint16_t cb_pool_addr_ofs = dw_stk_control_blocks[dw_stk].cb_pool_addr_ofs + dw_stk_control_blocks[dw_stk].stk_ptr_ofs;
+                const opee_uint_t cb_pool_addr_ofs = dw_stk_control_blocks[dw_stk].cb_pool_addr_ofs + dw_stk_control_blocks[dw_stk].stk_ptr_ofs;
 
                 // verify the entirety of desired space is free (== 0)
-                for (int i = cb_pool_addr_ofs; i < (cb_pool_addr_ofs + CbWrprMaxSz); i++)
+                for (opee_int_t i = cb_pool_addr_ofs; i < (cb_pool_addr_ofs + CbWrprMaxSz); i++)
                     if (cb_pool[i] != 0)
                         return OPEE_CB_POOL_RGN_NOT_EMPTY;
 
                 new (cb_pool + cb_pool_addr_ofs) CbWrapperDefined<TArg, TCb>(*cb_wrpr);
 
                 // checksum is all elements of serialized calback data XOR'd together
-                const uint8_t checksum = create_checksum(cb_pool_addr_ofs, data_sz);
+                const opee_uint8_t checksum = create_checksum(cb_pool_addr_ofs, data_sz);
 
                 subscribers[sub_count++] = SubscriberCtrlBlock(cb_pool_addr_ofs, data_sz, checksum,
                         reinterpret_cast<CbWrapperGeneric*>(cb_pool + cb_pool_addr_ofs)); // save pointer to cb from cb_pool

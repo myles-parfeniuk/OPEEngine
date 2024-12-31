@@ -10,15 +10,15 @@ namespace opee
     class PoolManagerTests
     {
         public:
-            static const constexpr uint16_t TEST_OPEEconfigMAX_DATA_WATCH_CNT = 5;
+            static const constexpr opee_uint_t TEST_OPEEconfigMAX_DATA_WATCH_CNT = 5;
 
             template <size_t DWStkSz>
-            static bool allocate_dw_stk_helper(const char* TEST_TAG, uint16_t& dw_stk_idx)
+            static bool allocate_dw_stk_helper(const char* TEST_TAG, opee_uint_t& dw_stk_idx)
             {
                 opee::CbPoolManager<TEST_OPEEconfigMAX_DATA_WATCH_CNT>& pool_manager = opee::CbHelper<TEST_OPEEconfigMAX_DATA_WATCH_CNT>::get_manager();
 
-                uint16_t dw_stk_idx_before_allocation = dw_stk_idx;
-                uint16_t allocator_ofs_before_allocation = pool_manager.allocator_ofs;
+                opee_uint_t dw_stk_idx_before_allocation = dw_stk_idx;
+                opee_uint_t allocator_ofs_before_allocation = pool_manager.allocator_ofs;
                 OPEEngineRes_t OPEEres;
 
                 OPEEres = pool_manager.template allocate_dw_stk<DWStkSz>(dw_stk_idx);
@@ -33,7 +33,7 @@ namespace opee
                 }
 
                 // DataWatch stack idx should correspond to order in which they were allocated (should increase with each allocation)
-                uint16_t expected_dw_stk_idx = (dw_stk_idx == 0) ? 0 : (dw_stk_idx - 1);
+                opee_uint_t expected_dw_stk_idx = (dw_stk_idx == 0) ? 0 : (dw_stk_idx - 1);
                 if (dw_stk_idx_before_allocation != expected_dw_stk_idx)
                 {
                     OPEEngineTestHelper::print_test_msg(
@@ -46,7 +46,7 @@ namespace opee
                 }
 
                 // starting offset of each DataWatch stack should increase with each allocation by size of previous DWStk allocation
-                uint16_t expected_cb_pool_ofs =
+                opee_uint_t expected_cb_pool_ofs =
                         (dw_stk_idx == 0) ? 0 : (pool_manager.dw_stk_control_blocks[dw_stk_idx - 1].cb_pool_addr_ofs + pool_manager.dw_stk_control_blocks[dw_stk_idx - 1].stk_sz);
 
                 if (pool_manager.dw_stk_control_blocks[dw_stk_idx].cb_pool_addr_ofs != expected_cb_pool_ofs)
@@ -95,10 +95,10 @@ namespace opee
                             TEST_TAG, "PASS: Allocator offset check. Actual: %d, Expected: %d", pool_manager.allocator_ofs, (allocator_ofs_before_allocation + DWStkSz));
                 }
 
-                uint8_t guard_byte_0 =
+                opee_uint8_t guard_byte_0 =
                         pool_manager.cb_pool[pool_manager.dw_stk_control_blocks[dw_stk_idx].cb_pool_addr_ofs + pool_manager.dw_stk_control_blocks[dw_stk_idx].stk_sz - 1];
 
-                uint8_t guard_byte_1 =
+                opee_uint8_t guard_byte_1 =
                         pool_manager.cb_pool[pool_manager.dw_stk_control_blocks[dw_stk_idx].cb_pool_addr_ofs + pool_manager.dw_stk_control_blocks[dw_stk_idx].stk_sz - 2];
 
                 // check guard bytes
@@ -120,7 +120,7 @@ namespace opee
             }
 
             template <size_t CbWrprMaxSz, typename TArg, typename TLambda>
-            static bool store_cb_helper(TLambda&& lambda, const char* TEST_TAG, opee::SubscriberCtrlBlock* subscribers, uint8_t& sub_count, const uint16_t dw_stk)
+            static bool store_cb_helper(TLambda&& lambda, const char* TEST_TAG, opee::SubscriberCtrlBlock* subscribers, opee_uint8_t& sub_count, const opee_uint_t dw_stk)
             {
                 opee::CbPoolManager<TEST_OPEEconfigMAX_DATA_WATCH_CNT>& pool_manager = opee::CbHelper<TEST_OPEEconfigMAX_DATA_WATCH_CNT>::get_manager();
 
@@ -129,8 +129,8 @@ namespace opee
                 CbWrapperDefined<TArg, TCb> cb_wrpr(std::forward<TLambda>(lambda)); // create a temp wrapper object on stack to store callback
 
                 size_t bytes2allocate = sizeof(CbWrapperDefined<TArg, TCb>);
-                uint8_t sub_count_before_allocation = sub_count;
-                uint16_t dw_stk_stack_pointer_ofs_before_allocation = pool_manager.dw_stk_control_blocks[dw_stk].stk_ptr_ofs;
+                opee_uint8_t sub_count_before_allocation = sub_count;
+                opee_uint_t dw_stk_stack_pointer_ofs_before_allocation = pool_manager.dw_stk_control_blocks[dw_stk].stk_ptr_ofs;
 
                 OPEEngineRes_t OPEEres = pool_manager.template store_cb<TArg, TCb, CbWrprMaxSz>(subscribers, sub_count, dw_stk, &cb_wrpr);
                 if (OPEEres != OPEE_OK)
@@ -154,8 +154,8 @@ namespace opee
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: sub count incrementaction check. Actual: %d Expected: %d", sub_count, (sub_count_before_allocation + 1));
                 }
 
-                uint16_t actual_dw_stk_ptr_ofs = pool_manager.dw_stk_control_blocks[dw_stk].stk_ptr_ofs;
-                uint16_t expected_dw_stk_ptr_ofs = dw_stk_stack_pointer_ofs_before_allocation + CbWrprMaxSz;
+                opee_uint_t actual_dw_stk_ptr_ofs = pool_manager.dw_stk_control_blocks[dw_stk].stk_ptr_ofs;
+                opee_uint_t expected_dw_stk_ptr_ofs = dw_stk_stack_pointer_ofs_before_allocation + CbWrprMaxSz;
 
                 if (actual_dw_stk_ptr_ofs != expected_dw_stk_ptr_ofs)
                 {
@@ -180,9 +180,9 @@ namespace opee
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: CbWrpr size check. Actual: %dbytes Expected: %dbytes", subscribers[sub_count - 1].data_sz, bytes2allocate);
                 }
 
-                uint16_t cb_pool_addr_ofs = (pool_manager.dw_stk_control_blocks[dw_stk].stk_ptr_ofs + pool_manager.dw_stk_control_blocks[dw_stk].cb_pool_addr_ofs) - CbWrprMaxSz;
-                uint16_t actual_checksum = pool_manager.create_checksum(cb_pool_addr_ofs, bytes2allocate);
-                uint16_t expected_checksum = subscribers[sub_count - 1].checksum;
+                opee_uint_t cb_pool_addr_ofs = (pool_manager.dw_stk_control_blocks[dw_stk].stk_ptr_ofs + pool_manager.dw_stk_control_blocks[dw_stk].cb_pool_addr_ofs) - CbWrprMaxSz;
+                opee_uint_t actual_checksum = pool_manager.create_checksum(cb_pool_addr_ofs, bytes2allocate);
+                opee_uint_t expected_checksum = subscribers[sub_count - 1].checksum;
 
                 // checksum validation
                 if (!pool_manager.validate_checksum(subscribers[sub_count - 1], dw_stk))
@@ -224,7 +224,7 @@ namespace opee
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: DataWatch count check.");
                 }
 
-                for (int i = 0; i < OPEEconfigCB_POOL_SZ; i++)
+                for (opee_int_t i = 0; i < OPEEconfigCB_POOL_SZ; i++)
                     if (pool_manager.cb_pool[i] != 0U)
                     {
                         OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: Non-zero value detected in cb_pool before any callbacks stored.");
@@ -242,7 +242,7 @@ namespace opee
 
                 opee::CbPoolManager<TEST_OPEEconfigMAX_DATA_WATCH_CNT>& pool_manager = opee::CbHelper<TEST_OPEEconfigMAX_DATA_WATCH_CNT>::get_manager();
 
-                for (int i = 0; i < TEST_OPEEconfigMAX_DATA_WATCH_CNT; i++)
+                for (opee_int_t i = 0; i < TEST_OPEEconfigMAX_DATA_WATCH_CNT; i++)
                 {
                     if (pool_manager.dw_stk_control_blocks[i].cb_pool_addr_ofs != 0)
                     {
@@ -281,9 +281,9 @@ namespace opee
             static bool allocate_single_dw_stk_test()
             {
                 const constexpr char* TEST_TAG = "allocate_single_dw_stk_test";
-                const constexpr uint16_t DWStkSz = 64;
+                const constexpr opee_uint_t DWStkSz = 64;
 
-                uint16_t dw_stk_idx = 0;
+                opee_uint_t dw_stk_idx = 0;
                 if (!allocate_dw_stk_helper<DWStkSz>(TEST_TAG, dw_stk_idx))
                     return false;
 
@@ -318,7 +318,7 @@ namespace opee
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: DataWatch count check.");
                 }
 
-                for (int i = 0; i < OPEEconfigCB_POOL_SZ; i++)
+                for (opee_int_t i = 0; i < OPEEconfigCB_POOL_SZ; i++)
                     if (pool_manager.cb_pool[i] != 0U)
                     {
                         OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: Non-zero value detected in cb_pool before any callbacks stored.");
@@ -338,7 +338,7 @@ namespace opee
 
                 pool_manager.reset();
 
-                for (int i = 0; i < TEST_OPEEconfigMAX_DATA_WATCH_CNT; i++)
+                for (opee_int_t i = 0; i < TEST_OPEEconfigMAX_DATA_WATCH_CNT; i++)
                 {
                     if (pool_manager.dw_stk_control_blocks[i].cb_pool_addr_ofs != 0)
                     {
@@ -386,9 +386,9 @@ namespace opee
                     DWStkSz_4 = 48   // Value at index 4
                 };
 
-                uint16_t dw_stk_idx = 0U;
+                opee_uint_t dw_stk_idx = 0U;
 
-                for (int i = 0; i < TEST_OPEEconfigMAX_DATA_WATCH_CNT; i++)
+                for (opee_int_t i = 0; i < TEST_OPEEconfigMAX_DATA_WATCH_CNT; i++)
                 {
                     switch (i)
                     {
@@ -429,14 +429,14 @@ namespace opee
             static bool attempt_cb_pool_overflow_test()
             {
                 const constexpr char* TEST_TAG = "attempt_cb_pool_overflow_test";
-                const constexpr uint16_t DWStkSz = 2 * (OPEEconfigCB_POOL_SZ / TEST_OPEEconfigMAX_DATA_WATCH_CNT); // should be guaranteed to cause invalid write
+                const constexpr opee_uint_t DWStkSz = 2 * (OPEEconfigCB_POOL_SZ / TEST_OPEEconfigMAX_DATA_WATCH_CNT); // should be guaranteed to cause invalid write
 
                 opee::CbPoolManager<TEST_OPEEconfigMAX_DATA_WATCH_CNT>& pool_manager = opee::CbHelper<TEST_OPEEconfigMAX_DATA_WATCH_CNT>::get_manager();
-                uint16_t dw_stk_idx = 0U;
-                uint16_t total_mem_occupied = 0U;
+                opee_uint_t dw_stk_idx = 0U;
+                opee_uint_t total_mem_occupied = 0U;
                 OPEEngineRes_t OPEEres;
 
-                for (int i = 0; i < TEST_OPEEconfigMAX_DATA_WATCH_CNT; i++)
+                for (opee_int_t i = 0; i < TEST_OPEEconfigMAX_DATA_WATCH_CNT; i++)
                 {
                     OPEEres = pool_manager.template allocate_dw_stk<DWStkSz>(dw_stk_idx);
                     total_mem_occupied += DWStkSz;
@@ -488,14 +488,14 @@ namespace opee
                         {
                         }
 
-                        void set_data_a(uint32_t new_data_a)
+                        void set_data_a(opee_uintl_t new_data_a)
                         {
                             data_b = !data_b;
                             data_a = new_data_a;
                         }
 
                     private:
-                        uint32_t data_a = 0U;
+                        opee_uintl_t data_a = 0U;
                         bool data_b = false;
                 };
 
@@ -509,12 +509,12 @@ namespace opee
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: successfully allocated DWStks to store callbacks.");
                 }
 
-                uint8_t sub_count = 0U;
+                opee_uint8_t sub_count = 0U;
                 opee::SubscriberCtrlBlock sub_list;
 
                 DummyClassForCapture capture_me;
                 // capture list item has to be used in callback or it will be optimized out
-                if (!store_cb_helper<16, uint32_t>([&capture_me](uint32_t new_data) { capture_me.set_data_a(new_data); }, TEST_TAG, &sub_list, sub_count, 0U))
+                if (!store_cb_helper<16, opee_uintl_t>([&capture_me](opee_uintl_t new_data) { capture_me.set_data_a(new_data); }, TEST_TAG, &sub_list, sub_count, 0U))
                 {
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: Could not store callback.");
                     return false;
@@ -541,18 +541,18 @@ namespace opee
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: successfully allocated DWStks to store callbacks.");
                 }
 
-                uint8_t sub_count_dw_stk_0 = 0U;
+                opee_uint8_t sub_count_dw_stk_0 = 0U;
                 opee::SubscriberCtrlBlock sub_list_dw_stk_0[3];
-                uint8_t sub_count_dw_stk_1 = 0U;
+                opee_uint8_t sub_count_dw_stk_1 = 0U;
                 opee::SubscriberCtrlBlock sub_list_dw_stk_1[3];
-                uint8_t sub_count_dw_stk_2 = 0U;
+                opee_uint8_t sub_count_dw_stk_2 = 0U;
                 opee::SubscriberCtrlBlock sub_list_dw_stk_2[3];
-                uint8_t sub_count_dw_stk_3 = 0U;
+                opee_uint8_t sub_count_dw_stk_3 = 0U;
                 opee::SubscriberCtrlBlock sub_list_dw_stk_3[2];
-                uint8_t sub_count_dw_stk_4 = 0U;
+                opee_uint8_t sub_count_dw_stk_4 = 0U;
                 opee::SubscriberCtrlBlock sub_list_dw_stk_4[2];
 
-                if (!store_cb_helper<16, uint32_t>([](uint32_t new_data) {}, TEST_TAG, sub_list_dw_stk_0, sub_count_dw_stk_0, 0U))
+                if (!store_cb_helper<16, opee_uintl_t>([](opee_uintl_t new_data) {}, TEST_TAG, sub_list_dw_stk_0, sub_count_dw_stk_0, 0U))
                 {
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: Could not store cb_0 on dw_stk_0.");
                     return false;
@@ -562,7 +562,7 @@ namespace opee
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: Successfully stored callback.");
                 }
 
-                if (!store_cb_helper<32, uint64_t>([](uint32_t new_data) {}, TEST_TAG, sub_list_dw_stk_0, sub_count_dw_stk_0, 0U))
+                if (!store_cb_helper<32, uint64_t>([](opee_uintl_t new_data) {}, TEST_TAG, sub_list_dw_stk_0, sub_count_dw_stk_0, 0U))
                 {
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: Could not store cb_1 on dw_stk_0.");
                     return false;
@@ -572,7 +572,7 @@ namespace opee
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: Successfully stored callback.");
                 }
 
-                if (!store_cb_helper<16, bool>([](uint32_t new_data) {}, TEST_TAG, sub_list_dw_stk_0, sub_count_dw_stk_0, 0U))
+                if (!store_cb_helper<16, bool>([](opee_uintl_t new_data) {}, TEST_TAG, sub_list_dw_stk_0, sub_count_dw_stk_0, 0U))
                 {
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: Could not store cb_2 on dw_stk_0.");
                     return false;
@@ -582,7 +582,7 @@ namespace opee
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: Successfully stored callback.");
                 }
 
-                if (!store_cb_helper<16, uint32_t>([](uint32_t new_data) {}, TEST_TAG, sub_list_dw_stk_1, sub_count_dw_stk_1, 1U))
+                if (!store_cb_helper<16, opee_uintl_t>([](opee_uintl_t new_data) {}, TEST_TAG, sub_list_dw_stk_1, sub_count_dw_stk_1, 1U))
                 {
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: Could not store cb_0 on dw_stk_1.");
                     return false;
@@ -592,7 +592,7 @@ namespace opee
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: Successfully stored callback.");
                 }
 
-                if (!store_cb_helper<16, uint64_t>([](uint32_t new_data) {}, TEST_TAG, sub_list_dw_stk_1, sub_count_dw_stk_1, 1U))
+                if (!store_cb_helper<16, uint64_t>([](opee_uintl_t new_data) {}, TEST_TAG, sub_list_dw_stk_1, sub_count_dw_stk_1, 1U))
                 {
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: Could not store cb_1 on dw_stk_1.");
                     return false;
@@ -602,7 +602,7 @@ namespace opee
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: Successfully stored callback.");
                 }
 
-                if (!store_cb_helper<16, bool>([](uint32_t new_data) {}, TEST_TAG, sub_list_dw_stk_1, sub_count_dw_stk_1, 1U))
+                if (!store_cb_helper<16, bool>([](opee_uintl_t new_data) {}, TEST_TAG, sub_list_dw_stk_1, sub_count_dw_stk_1, 1U))
                 {
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: Could not store cb_2 on dw_stk_1.");
                     return false;
@@ -612,7 +612,7 @@ namespace opee
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: Successfully stored callback.");
                 }
 
-                if (!store_cb_helper<16, uint32_t>([](uint32_t new_data) {}, TEST_TAG, sub_list_dw_stk_2, sub_count_dw_stk_2, 2U))
+                if (!store_cb_helper<16, opee_uintl_t>([](opee_uintl_t new_data) {}, TEST_TAG, sub_list_dw_stk_2, sub_count_dw_stk_2, 2U))
                 {
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: Could not store cb_0 on dw_stk_2.");
                     return false;
@@ -622,7 +622,7 @@ namespace opee
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: Successfully stored callback.");
                 }
 
-                if (!store_cb_helper<32, uint64_t>([](uint32_t new_data) {}, TEST_TAG, sub_list_dw_stk_2, sub_count_dw_stk_2, 2U))
+                if (!store_cb_helper<32, uint64_t>([](opee_uintl_t new_data) {}, TEST_TAG, sub_list_dw_stk_2, sub_count_dw_stk_2, 2U))
                 {
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: Could not store cb_1 on dw_stk_2.");
                     return false;
@@ -632,7 +632,7 @@ namespace opee
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: Successfully stored callback.");
                 }
 
-                if (!store_cb_helper<16, bool>([](uint32_t new_data) {}, TEST_TAG, sub_list_dw_stk_2, sub_count_dw_stk_2, 2U))
+                if (!store_cb_helper<16, bool>([](opee_uintl_t new_data) {}, TEST_TAG, sub_list_dw_stk_2, sub_count_dw_stk_2, 2U))
                 {
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: Could not store cb_2 on dw_stk_2.");
                     return false;
@@ -642,7 +642,7 @@ namespace opee
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: Successfully stored callback.");
                 }
 
-                if (!store_cb_helper<16, uint32_t>([](uint32_t new_data) {}, TEST_TAG, sub_list_dw_stk_3, sub_count_dw_stk_3, 3U))
+                if (!store_cb_helper<16, opee_uintl_t>([](opee_uintl_t new_data) {}, TEST_TAG, sub_list_dw_stk_3, sub_count_dw_stk_3, 3U))
                 {
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: Could not store cb_0 on dw_stk_3.");
                     return false;
@@ -652,7 +652,7 @@ namespace opee
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: Successfully stored callback.");
                 }
 
-                if (!store_cb_helper<12, uint64_t>([](uint32_t new_data) {}, TEST_TAG, sub_list_dw_stk_3, sub_count_dw_stk_3, 3U))
+                if (!store_cb_helper<12, uint64_t>([](opee_uintl_t new_data) {}, TEST_TAG, sub_list_dw_stk_3, sub_count_dw_stk_3, 3U))
                 {
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: Could not store cb_1 on dw_stk_3.");
                     return false;
@@ -662,7 +662,7 @@ namespace opee
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: Successfully stored callback.");
                 }
 
-                if (!store_cb_helper<16, uint32_t>([](uint32_t new_data) {}, TEST_TAG, sub_list_dw_stk_4, sub_count_dw_stk_4, 4U))
+                if (!store_cb_helper<16, opee_uintl_t>([](opee_uintl_t new_data) {}, TEST_TAG, sub_list_dw_stk_4, sub_count_dw_stk_4, 4U))
                 {
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: Could not store cb_0 on dw_stk_4.");
                     return false;
@@ -672,7 +672,7 @@ namespace opee
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: Successfully stored callback.");
                 }
 
-                if (!store_cb_helper<24, uint64_t>([](uint32_t new_data) {}, TEST_TAG, sub_list_dw_stk_4, sub_count_dw_stk_4, 4U))
+                if (!store_cb_helper<24, uint64_t>([](opee_uintl_t new_data) {}, TEST_TAG, sub_list_dw_stk_4, sub_count_dw_stk_4, 4U))
                 {
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: Could not store cb_1 on dw_stk_4.");
                     return false;
@@ -690,17 +690,17 @@ namespace opee
                 const constexpr char* TEST_TAG = "attempt_dw_stk_overflow_test";
 
                 opee::CbPoolManager<TEST_OPEEconfigMAX_DATA_WATCH_CNT>& pool_manager = opee::CbHelper<TEST_OPEEconfigMAX_DATA_WATCH_CNT>::get_manager();
-                const constexpr uint16_t DWStkSz = 64U;
-                const constexpr uint16_t CbWrprMaxSz = DWStkSz / 4U;
-                uint16_t dw_stk_idx = 0U;
+                const constexpr opee_uint_t DWStkSz = 64U;
+                const constexpr opee_uint_t CbWrprMaxSz = DWStkSz / 4U;
+                opee_uint_t dw_stk_idx = 0U;
 
                 if (!allocate_dw_stk_helper<DWStkSz>(TEST_TAG, dw_stk_idx))
                     return false;
 
-                uint8_t sub_count = 0U;
+                opee_uint8_t sub_count = 0U;
                 opee::SubscriberCtrlBlock sub_list[5];
 
-                if (!store_cb_helper<CbWrprMaxSz, uint32_t>([](uint32_t new_data) {}, TEST_TAG, sub_list, sub_count, dw_stk_idx))
+                if (!store_cb_helper<CbWrprMaxSz, opee_uintl_t>([](opee_uintl_t new_data) {}, TEST_TAG, sub_list, sub_count, dw_stk_idx))
                 {
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: Could not store cb_0 on dw_stk_0.");
                     return false;
@@ -710,7 +710,7 @@ namespace opee
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: Successfully stored callback.");
                 }
 
-                if (!store_cb_helper<CbWrprMaxSz, uint64_t>([](uint32_t new_data) {}, TEST_TAG, sub_list, sub_count, dw_stk_idx))
+                if (!store_cb_helper<CbWrprMaxSz, uint64_t>([](opee_uintl_t new_data) {}, TEST_TAG, sub_list, sub_count, dw_stk_idx))
                 {
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: Could not store cb_1 on dw_stk_0.");
                     return false;
@@ -720,7 +720,7 @@ namespace opee
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: Successfully stored callback.");
                 }
 
-                if (!store_cb_helper<CbWrprMaxSz, bool>([](uint32_t new_data) {}, TEST_TAG, sub_list, sub_count, dw_stk_idx))
+                if (!store_cb_helper<CbWrprMaxSz, bool>([](opee_uintl_t new_data) {}, TEST_TAG, sub_list, sub_count, dw_stk_idx))
                 {
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: Could not store cb_2 on dw_stk_0.");
                     return false;
@@ -740,7 +740,7 @@ namespace opee
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: Failed to store callback on overflow conditions.");
                 }
 
-                if (store_cb_helper<CbWrprMaxSz, uintptr_t>([](uintptr_t new_data) {}, TEST_TAG, sub_list, sub_count, dw_stk_idx))
+                if (store_cb_helper<CbWrprMaxSz, opee_uintptr_t>([](opee_uintptr_t new_data) {}, TEST_TAG, sub_list, sub_count, dw_stk_idx))
                 {
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: Allocated for cb in cb_pool past respective DWStk guard bytes.");
                     return false;

@@ -8,7 +8,7 @@ namespace opee
     class CbWrapperGeneric
     {
         public:
-            virtual void invoke(uintptr_t arg2p_addr, uintptr_t data_addr) = 0;
+            virtual void invoke(opee_uintptr_t arg2p_addr, opee_uintptr_t data_addr) = 0;
             virtual ~CbWrapperGeneric() = default;
     };
 } // namespace opee

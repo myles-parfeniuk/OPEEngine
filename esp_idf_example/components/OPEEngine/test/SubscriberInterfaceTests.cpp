@@ -1,5 +1,3 @@
-#pragma once
-
 // third-party
 #include "unity.h"
 #include "freertos/FreeRTOS.h"

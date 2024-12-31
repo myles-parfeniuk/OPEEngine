@@ -18,10 +18,10 @@ namespace opee
 
         private:
             SubscriberCtrlBlock subscribers[CbMaxCnt];
-            uint8_t sub_count = 0;
+            opee_uint8_t sub_count = 0;
             TArg data;
             TArg arg2p;
-            uint16_t dw_stk;
+            opee_uint_t dw_stk;
             CbPoolManager<OPEEconfigMAX_DATA_WATCH_CNT>& pool_manager;
             OPEEngineRes_t dw_stk_alloc_res = OPEE_DW_STK_NOT_INIT;
 
@@ -52,7 +52,7 @@ namespace opee
 
                     if ((sub_interface != nullptr) && (res == OPEE_OK))
                     {
-                        const uintptr_t arg2p_ptr = reinterpret_cast<uintptr_t>(&arg2p);
+                        const opee_uintptr_t arg2p_ptr = reinterpret_cast<opee_uintptr_t>(&arg2p);
                         *sub_interface = Subscriber<TArg>(&subscribers[sub_count - 1], arg2p_ptr);
                     }
 
@@ -62,12 +62,12 @@ namespace opee
                 return OPEE_MAX_SUB_CNT_EXCEEDED;
             }
 
-            bool set(TArg arg)
+            OPEEngineRes_t set(TArg arg)
             {
 
                 arg2p = arg;
-                const uintptr_t arg2p_ptr = reinterpret_cast<uintptr_t>(&arg2p);
-                const uintptr_t data_ptr = reinterpret_cast<uintptr_t>(&data);
+                const opee_uintptr_t arg2p_ptr = reinterpret_cast<opee_uintptr_t>(&arg2p);
+                const opee_uintptr_t data_ptr = reinterpret_cast<opee_uintptr_t>(&data);
                 return CbHelper<OPEEconfigMAX_DATA_WATCH_CNT>::queue_cbs(subscribers, sub_count, arg2p_ptr, data_ptr);
             }
 

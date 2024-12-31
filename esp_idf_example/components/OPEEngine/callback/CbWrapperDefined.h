@@ -21,7 +21,7 @@ namespace opee
             {
             }
 
-            void invoke(uintptr_t arg2p_addr, uintptr_t data_addr) override
+            void invoke(opee_uintptr_t arg2p_addr, opee_uintptr_t data_addr) override
             {
                 volatile TArg* arg2p_ptr = reinterpret_cast<volatile TArg*>(arg2p_addr);
                 volatile TArg* data_ptr;
