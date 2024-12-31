@@ -5,6 +5,7 @@
 #include <utility>
 #include <iostream>
 // OPEEngine
+#include "OPEEngine_types.h"
 #include "CbHelper.h"
 #include "SubscriberCtrlBlock.h"
 #include "Subscriber.h"

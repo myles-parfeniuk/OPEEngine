@@ -2,7 +2,7 @@
 // std lib
 #include "stdint.h"
 // OPEEngine
-#include "DataWatch.h"
+#include "OPEEngine.h"
 // demo specific
 #include "ExampleDataTypes.h"
 

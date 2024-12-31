@@ -5,6 +5,7 @@
 #include "freertos/queue.h"
 // OPEEngine
 #include "OPEEngineConfig.h"
+#include "OPEEngine_types.h"
 #include "SubscriberCtrlBlock.h"
 #include "CbPoolManager.h"
 
