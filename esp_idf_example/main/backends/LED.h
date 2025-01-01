@@ -6,15 +6,15 @@
 #include "driver/ledc.h"
 #include "esp_log.h"
 // OPEEngine
-#include "OPEEDevice.h"
+#include "Device.h"
 
 class LED
 {
     public:
-        LED(OPEEDevice& d, gpio_num_t led_pin);
+        LED(Device& d, gpio_num_t led_pin);
 
     private:
-        OPEEDevice& d;
+        Device& d;
         gpio_num_t pin = GPIO_NUM_NC;
         uint8_t current_pwm_pct;
         bool state;

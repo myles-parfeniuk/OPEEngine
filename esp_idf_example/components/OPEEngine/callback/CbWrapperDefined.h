@@ -23,17 +23,17 @@ namespace opee
 
             void invoke(opee_uintptr_t arg2p_addr, opee_uintptr_t data_addr) override
             {
-                volatile TArg* arg2p_ptr = reinterpret_cast<volatile TArg*>(arg2p_addr);
-                volatile TArg* data_ptr;
+                volatile TArg* _arg2p = reinterpret_cast<volatile TArg*>(arg2p_addr);
+                volatile TArg* _data;
 
-                cb(*arg2p_ptr);
+                cb(*_arg2p);
 
                 // last callback in salvo callbacks requested by data watch object if data_addr != 0
                 if (data_addr != 0)
                 {
                     // overwrite the data with the new data after all callbacks are finished executing
-                    data_ptr = reinterpret_cast<volatile TArg*>(data_addr);
-                    *data_ptr = *arg2p_ptr;
+                    _data = reinterpret_cast<volatile TArg*>(data_addr);
+                    *_data = *_arg2p;
                 }
             }
     };

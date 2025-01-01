@@ -1,9 +1,9 @@
 // third-party
 #include "unity.h"
 // OPEEngine
+#include "OPEEngineTestHelper.h"
 #include "../callback/CbHelper.h"
 #include "../OPEEngineConfig.h"
-#include "OPEEngineTestHelper.h"
 
 namespace opee
 {

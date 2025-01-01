@@ -7,7 +7,7 @@
 #include "ExampleDataTypes.h"
 
 // clang-format off
-class OPEEDevice
+class Device
 {
     public:
 
@@ -30,7 +30,7 @@ class OPEEDevice
 
         /*USER CODE: end*/
 
-        OPEEDevice(): 
+        Device(): 
 
             /*USER CODE: instantiate data objects with initial values:*/
 

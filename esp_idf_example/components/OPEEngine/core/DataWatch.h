@@ -52,8 +52,8 @@ namespace opee
 
                     if ((sub_interface != nullptr) && (res == OPEE_OK))
                     {
-                        const opee_uintptr_t arg2p_ptr = reinterpret_cast<opee_uintptr_t>(&arg2p);
-                        *sub_interface = Subscriber<TArg>(&subscribers[sub_count - 1], arg2p_ptr);
+                        const opee_uintptr_t _arg2p = reinterpret_cast<opee_uintptr_t>(&arg2p);
+                        *sub_interface = Subscriber<TArg>(&subscribers[sub_count - 1], _arg2p);
                     }
 
                     return res;
@@ -62,13 +62,21 @@ namespace opee
                 return OPEE_MAX_SUB_CNT_EXCEEDED;
             }
 
-            OPEEngineRes_t set(TArg arg)
+            OPEEngineRes_t set(TArg arg, bool execute_callbacks = true)
             {
 
                 arg2p = arg;
-                const opee_uintptr_t arg2p_ptr = reinterpret_cast<opee_uintptr_t>(&arg2p);
-                const opee_uintptr_t data_ptr = reinterpret_cast<opee_uintptr_t>(&data);
-                return CbHelper<OPEEconfigMAX_DATA_WATCH_CNT>::queue_cbs(subscribers, sub_count, arg2p_ptr, data_ptr);
+                if (execute_callbacks)
+                {
+                    const opee_uintptr_t _arg2p = reinterpret_cast<opee_uintptr_t>(&arg2p);
+                    const opee_uintptr_t _data = reinterpret_cast<opee_uintptr_t>(&data);
+                    return CbHelper<OPEEconfigMAX_DATA_WATCH_CNT>::queue_cbs(subscribers, sub_count, _arg2p, _data);
+                }
+                else
+                {
+                    data = arg2p;
+                    return OPEE_OK;
+                }
             }
 
             TArg get()

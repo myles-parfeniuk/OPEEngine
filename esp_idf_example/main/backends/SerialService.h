@@ -8,15 +8,15 @@
 #include "freertos/task.h"
 #include "freertos/queue.h"
 // OPEEngine
-#include "OPEEDevice.h"
+#include "Device.h"
 
 class SerialService
 {
     public:
-        SerialService(OPEEDevice& d);
+        SerialService(Device& d);
 
     private:
-        OPEEDevice& d;
+        Device& d;
 
         TaskHandle_t uart_task_hdl;
         QueueHandle_t queue_uart;

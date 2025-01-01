@@ -8,15 +8,15 @@
 #include "driver/gpio.h"
 #include "esp_log.h"
 // OPEEngine
-#include "OPEEDevice.h"
+#include "Device.h"
 
 class Button
 {
     public:
-        Button(OPEEDevice& d, gpio_num_t button_pin);
+        Button(Device& d, gpio_num_t button_pin);
 
     private:
-        OPEEDevice& d;
+        Device& d;
 
         gpio_num_t pin = GPIO_NUM_NC;
 

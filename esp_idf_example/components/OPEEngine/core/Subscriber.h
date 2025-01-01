@@ -22,6 +22,9 @@ namespace opee
 
             void notify(TArg arg2p)
             {
+                volatile TArg* _arg2p = reinterpret_cast<volatile TArg*>(arg2p_addr);
+
+                *_arg2p = arg2p;
                 _ctrl_blk->cb_wrpr->invoke(arg2p_addr, 0U);
             }
 

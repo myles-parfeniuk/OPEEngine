@@ -1,6 +1,6 @@
 #include "LED.h"
 
-LED::LED(OPEEDevice& d, gpio_num_t led_pin)
+LED::LED(Device& d, gpio_num_t led_pin)
     : d(d)
     , pin(led_pin)
 {

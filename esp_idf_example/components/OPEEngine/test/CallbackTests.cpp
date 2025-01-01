@@ -5,9 +5,9 @@
 #include "freertos/semphr.h"
 #include "freertos/event_groups.h"
 // OPEEngine
-#include "../DataWatch.h"
-#include "../OPEEngineConfig.h"
 #include "OPEEngineTestHelper.h"
+#include "../OPEEngineConfig.h"
+#include "../core/DataWatch.h"
 
 namespace opee
 {

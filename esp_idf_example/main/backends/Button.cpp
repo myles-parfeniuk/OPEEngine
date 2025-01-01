@@ -1,6 +1,6 @@
 #include "Button.h"
 
-Button::Button(OPEEDevice& d, gpio_num_t button_pin)
+Button::Button(Device& d, gpio_num_t button_pin)
     : d(d)
     , pin(button_pin)
 {

@@ -23,7 +23,7 @@ namespace opee
                 if (i < CbPoolSz)
                     return cb_pool[i];
                 else
-                    return cb_pool[CbPoolSz - 1];
+                    return 0U;
             }
 
             // overloaded [] operator for non-const access (read/write)
