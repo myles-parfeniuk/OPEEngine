@@ -10,7 +10,6 @@
 
 // std lib
 #include <stdio.h>
-#include <string.h>
 // third-party
 #include "unity.h"
 

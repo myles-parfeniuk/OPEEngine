@@ -1,22 +1,20 @@
 #pragma once
-// std lib
-#include <cstring>
 // OPEEngine
-#include "CbWrapperGeneric.h"
+#include "CbWrprGeneric.h"
 
 namespace opee
 {
 
     // template derived class that wraps a callback
     template <typename TArg, typename TCb>
-    class CbWrapperDefined : public CbWrapperGeneric
+    class CbWrprDefined : public CbWrprGeneric
     {
         private:
             TCb cb;
 
         public:
             // constructor to set the callback
-            CbWrapperDefined(TCb cb)
+            CbWrprDefined(TCb cb)
                 : cb(cb)
             {
             }

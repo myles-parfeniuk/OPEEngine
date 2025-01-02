@@ -1,6 +1,4 @@
 #pragma once
-// std lib
-#include "stdint.h"
 // OPEEngine
 #include "OPEEngine.h"
 // demo specific
@@ -39,7 +37,6 @@ class Device
             
             /*USER CODE: end*/
         {
-            opee::CbHelper<OPEEconfigMAX_DATA_WATCH_CNT>::init();
         }
 };
 

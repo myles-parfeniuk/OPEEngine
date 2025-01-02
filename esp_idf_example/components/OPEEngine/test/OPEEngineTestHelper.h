@@ -11,8 +11,8 @@
 #include <stdarg.h>
 // third-party
 #include "unity.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/semphr.h"
+// OPEEngine
+#include "OPEEngine_freeRTOS_hook.h"
 
 /**
  * @class OPEEngineTestHelper

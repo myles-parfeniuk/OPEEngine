@@ -1,6 +1,6 @@
 #pragma once
 // OPEEngine
-#include "SubscriberCtrlBlock.h"
+#include "SubCtrlBlk.h"
 
 namespace opee
 {
@@ -14,7 +14,7 @@ namespace opee
             {
             }
 
-            Subscriber(SubscriberCtrlBlock* _ctrl_blk, opee_uintptr_t arg2p_addr)
+            Subscriber(SubCtrlBlk* _ctrl_blk, opee_uintptr_t arg2p_addr)
                 : _ctrl_blk(_ctrl_blk)
                 , arg2p_addr(arg2p_addr)
             {
@@ -25,7 +25,7 @@ namespace opee
                 volatile TArg* _arg2p = reinterpret_cast<volatile TArg*>(arg2p_addr);
 
                 *_arg2p = arg2p;
-                _ctrl_blk->cb_wrpr->invoke(arg2p_addr, 0U);
+                _ctrl_blk->_cb_wrpr->invoke(arg2p_addr, 0U);
             }
 
             bool is_muted()
@@ -45,11 +45,11 @@ namespace opee
 
             bool validate_checksum()
             {
-                return SubscriberCtrlBlock::validate_checksum(*_ctrl_blk);
+                return SubCtrlBlk::validate_checksum(*_ctrl_blk);
             }
 
         private:
-            SubscriberCtrlBlock* _ctrl_blk;
+            SubCtrlBlk* _ctrl_blk;
             opee_uintptr_t arg2p_addr;
     };
 } // namespace opee

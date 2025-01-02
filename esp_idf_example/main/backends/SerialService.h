@@ -1,7 +1,5 @@
 #pragma once
 // std lib
-#include <cstdio>
-#include <cstring>
 #include <stdio.h>
 // esp-idf
 #include "freertos/FreeRTOS.h"

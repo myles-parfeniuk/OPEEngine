@@ -1,6 +1,4 @@
 #pragma once
-// std lib
-#include <cstdio>
 // esp-idf
 #include "driver/gpio.h"
 #include "driver/ledc.h"

@@ -1,17 +1,14 @@
 #pragma once
-// third-party
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/queue.h"
 // OPEEngine
+#include "OPEEngine_freeRTOS_hook.h"
 #include "OPEEngineConfig.h"
 #include "OPEEngine_types.h"
-#include "SubscriberCtrlBlock.h"
+#include "SubCtrlBlk.h"
 #include "CbPoolManager.h"
 
 namespace opee
 {
-    template <size_t DWMaxCnt>
+    template <opee_size_t DWMaxCnt>
     class CbHelper
     {
         public:
@@ -41,20 +38,38 @@ namespace opee
                 }
             }
 
-            static OPEEngineRes_t queue_cbs(SubscriberCtrlBlock* subscribers, opee_uint8_t sub_count, opee_uintptr_t arg2p_addr, opee_uintptr_t data_addr)
+            static opee_ssize_t find_last_cb_to_execute(SubCtrlBlk* subscribers, opee_uint8_t sub_count)
             {
-                for (opee_ssize_t i = 0; i < sub_count; i++)
-                    if (subscribers[i].cb_wrpr != nullptr)
-                    {
-                        // skip this callback if muted
-                        if (subscribers[i].muted)
-                            continue;
+                for (opee_ssize_t i = sub_count - 1; i >= 0; i--)
+                    if (!subscribers[i].muted)
+                        return i;
 
-                        // only pass data address to last subscriber on list such that data is updated after last callback execution
-                        cb_queue_item_t item2queue = {subscribers[i].cb_wrpr, arg2p_addr, (i != (sub_count - 1)) ? 0 : data_addr};
-                        if (xQueueSend(queue_cb_hdl, &item2queue, 0UL) != pdTRUE)
-                            return OPEE_CB_QUEUE_FULL;
-                    }
+                return -1;
+            }
+
+            static OPEEngineRes_t queue_cbs(SubCtrlBlk* subscribers, opee_uint8_t sub_count, opee_uintptr_t arg2p_addr, opee_uintptr_t data_addr)
+            {
+                opee_ssize_t last_cb_2_execute = find_last_cb_to_execute(subscribers, sub_count);
+
+                if (last_cb_2_execute != -1)
+                {
+                    for (opee_ssize_t i = 0; i < sub_count; i++)
+                        if (subscribers[i]._cb_wrpr != nullptr)
+                        {
+                            // skip this callback if muted
+                            if (subscribers[i].muted)
+                                continue;
+
+                            // only pass data address to last subscriber on list such that data is updated after last callback execution
+                            cb_queue_item_t item2queue = {subscribers[i]._cb_wrpr, arg2p_addr, (i != last_cb_2_execute) ? 0 : data_addr};
+                            if (xQueueSend(queue_cb_hdl, &item2queue, 0UL) != pdTRUE)
+                                return OPEE_CB_QUEUE_FULL;
+                        }
+                }
+                else
+                {
+                    return OPEE_ALL_CB_MUTED;
+                }
 
                 return OPEE_OK;
             }
@@ -67,7 +82,7 @@ namespace opee
         private:
             typedef struct cb_queue_item_t
             {
-                    CbWrapperGeneric* cb;
+                    CbWrprGeneric* cb;
                     opee_uintptr_t arg2p_addr;
                     opee_uintptr_t data_addr;
             } cb_queue_item_t;

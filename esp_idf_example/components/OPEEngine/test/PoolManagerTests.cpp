@@ -2,8 +2,9 @@
 #include "unity.h"
 // OPEEngine
 #include "OPEEngineTestHelper.h"
-#include "../callback/CbHelper.h"
 #include "../OPEEngineConfig.h"
+#include "../core/OPEEngine.h"
+#include "../callback/CbHelper.h"
 
 namespace opee
 {
@@ -56,7 +57,7 @@ namespace opee
 
                 for (opee_ssize_t i = 0; i < OPEEconfigMAX_DATA_WATCH_CNT; i++)
                 {
-                    if (pool_manager.dw_stk_control_blocks[i].cb_pool_addr_ofs != 0)
+                    if (pool_manager.dw_stk_ctrl_blks[i].cb_pool_addr_ofs != 0)
                     {
                         OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: DWStk addr offset did not initially point to 0.");
                         return false;
@@ -66,7 +67,7 @@ namespace opee
                         OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: DWStk addr offset check.");
                     }
 
-                    if (pool_manager.dw_stk_control_blocks[i].stk_ptr_ofs != 0)
+                    if (pool_manager.dw_stk_ctrl_blks[i].stk_ptr_ofs != 0)
                     {
                         OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: DWStk stack pointer offset did not initially point to 0.");
                         return false;
@@ -76,7 +77,7 @@ namespace opee
                         OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: DWStk stack pointer offset check.");
                     }
 
-                    if (pool_manager.dw_stk_control_blocks[i].stk_sz != 0)
+                    if (pool_manager.dw_stk_ctrl_blks[i].stk_sz != 0)
                     {
                         OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: DWStk stack size not initially 0 bytes.");
                         return false;
@@ -107,7 +108,6 @@ namespace opee
                 const constexpr char* TEST_TAG = "pool_manager_vals_after_reset_test";
 
                 opee::CbPoolManager<OPEEconfigMAX_DATA_WATCH_CNT>& pool_manager = opee::CbHelper<OPEEconfigMAX_DATA_WATCH_CNT>::get_manager();
-
                 pool_manager.reset();
 
                 if (pool_manager.allocator_ofs != 0)
@@ -152,7 +152,7 @@ namespace opee
 
                 for (opee_ssize_t i = 0; i < OPEEconfigMAX_DATA_WATCH_CNT; i++)
                 {
-                    if (pool_manager.dw_stk_control_blocks[i].cb_pool_addr_ofs != 0)
+                    if (pool_manager.dw_stk_ctrl_blks[i].cb_pool_addr_ofs != 0)
                     {
                         OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: DWStk addr offset did not initially point to 0.");
                         return false;
@@ -162,7 +162,7 @@ namespace opee
                         OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: DWStk addr offset check.");
                     }
 
-                    if (pool_manager.dw_stk_control_blocks[i].stk_ptr_ofs != 0)
+                    if (pool_manager.dw_stk_ctrl_blks[i].stk_ptr_ofs != 0)
                     {
                         OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: DWStk stack pointer offset did not initially point to 0.");
                         return false;
@@ -172,7 +172,7 @@ namespace opee
                         OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: DWStk stack pointer offset check.");
                     }
 
-                    if (pool_manager.dw_stk_control_blocks[i].stk_sz != 0)
+                    if (pool_manager.dw_stk_ctrl_blks[i].stk_sz != 0)
                     {
                         OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: DWStk stack size not initially 0 bytes.");
                         return false;
@@ -250,7 +250,7 @@ namespace opee
 
                 for (opee_ssize_t i = 0; i < OPEEconfigMAX_DATA_WATCH_CNT; i++)
                 {
-                    OPEEres = pool_manager.template allocate_dw_stk<DWStkSz>(dw_stk_idx);
+                    OPEEres = pool_manager.template allocate_dw_stk<DWStkSz, CbMaxCnt>(dw_stk_idx, nullptr);
                     total_mem_occupied += DWStkSz;
 
                     if (total_mem_occupied < OPEEconfigCB_POOL_SZ)
@@ -322,7 +322,7 @@ namespace opee
                 }
 
                 opee_uint8_t sub_count = 0U;
-                opee::SubscriberCtrlBlock sub_list;
+                opee::SubCtrlBlk sub_list;
 
                 DummyClassForCapture capture_me;
                 // capture list item has to be used in callback or it will be optimized out
@@ -354,15 +354,15 @@ namespace opee
                 }
 
                 opee_uint8_t sub_count_dw_stk_0 = 0U;
-                opee::SubscriberCtrlBlock sub_list_dw_stk_0[3];
+                opee::SubCtrlBlk sub_list_dw_stk_0[3];
                 opee_uint8_t sub_count_dw_stk_1 = 0U;
-                opee::SubscriberCtrlBlock sub_list_dw_stk_1[3];
+                opee::SubCtrlBlk sub_list_dw_stk_1[3];
                 opee_uint8_t sub_count_dw_stk_2 = 0U;
-                opee::SubscriberCtrlBlock sub_list_dw_stk_2[3];
+                opee::SubCtrlBlk sub_list_dw_stk_2[3];
                 opee_uint8_t sub_count_dw_stk_3 = 0U;
-                opee::SubscriberCtrlBlock sub_list_dw_stk_3[2];
+                opee::SubCtrlBlk sub_list_dw_stk_3[2];
                 opee_uint8_t sub_count_dw_stk_4 = 0U;
-                opee::SubscriberCtrlBlock sub_list_dw_stk_4[2];
+                opee::SubCtrlBlk sub_list_dw_stk_4[2];
 
                 if (!store_cb_helper<16, opee_uintl_t>([](opee_uintl_t new_data) {}, TEST_TAG, sub_list_dw_stk_0, sub_count_dw_stk_0, 0U))
                 {
@@ -510,7 +510,7 @@ namespace opee
                     return false;
 
                 opee_uint8_t sub_count = 0U;
-                opee::SubscriberCtrlBlock sub_list[5];
+                opee::SubCtrlBlk sub_list[5];
 
                 if (!store_cb_helper<CbWrprMaxSz, opee_uintl_t>([](opee_uintl_t new_data) {}, TEST_TAG, sub_list, sub_count, dw_stk_idx))
                 {
@@ -568,7 +568,8 @@ namespace opee
             }
 
         private:
-            template <size_t DWStkSz>
+            static const constexpr opee_size_t CbMaxCnt = 10U; // this value is irrelevant for the tests in this module, but a required template arg
+            template <opee_size_t DWStkSz>
             static bool allocate_dw_stk_helper(const char* TEST_TAG, opee_size_t& dw_stk_idx)
             {
                 opee::CbPoolManager<OPEEconfigMAX_DATA_WATCH_CNT>& pool_manager = opee::CbHelper<OPEEconfigMAX_DATA_WATCH_CNT>::get_manager();
@@ -577,7 +578,7 @@ namespace opee
                 opee_size_t allocator_ofs_before_allocation = pool_manager.allocator_ofs;
                 OPEEngineRes_t OPEEres;
 
-                OPEEres = pool_manager.template allocate_dw_stk<DWStkSz>(dw_stk_idx);
+                OPEEres = pool_manager.template allocate_dw_stk<DWStkSz, CbMaxCnt>(dw_stk_idx, nullptr);
                 if (OPEEres != OPEE_OK)
                 {
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: allocate_dw_stk() did not return successfully: %s.", OPEEngineRes_to_str(OPEEres));
@@ -603,22 +604,22 @@ namespace opee
 
                 // starting offset of each DataWatch stack should increase with each allocation by size of previous DWStk allocation
                 opee_size_t expected_cb_pool_ofs =
-                        (dw_stk_idx == 0) ? 0 : (pool_manager.dw_stk_control_blocks[dw_stk_idx - 1].cb_pool_addr_ofs + pool_manager.dw_stk_control_blocks[dw_stk_idx - 1].stk_sz);
+                        (dw_stk_idx == 0) ? 0 : (pool_manager.dw_stk_ctrl_blks[dw_stk_idx - 1].cb_pool_addr_ofs + pool_manager.dw_stk_ctrl_blks[dw_stk_idx - 1].stk_sz);
 
-                if (pool_manager.dw_stk_control_blocks[dw_stk_idx].cb_pool_addr_ofs != expected_cb_pool_ofs)
+                if (pool_manager.dw_stk_ctrl_blks[dw_stk_idx].cb_pool_addr_ofs != expected_cb_pool_ofs)
                 {
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: DWStk addr offset does not match expected value. Actual: %d, Expected: %d",
-                            pool_manager.dw_stk_control_blocks[dw_stk_idx].cb_pool_addr_ofs, expected_cb_pool_ofs);
+                            pool_manager.dw_stk_ctrl_blks[dw_stk_idx].cb_pool_addr_ofs, expected_cb_pool_ofs);
                     return false;
                 }
                 else
                 {
-                    OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: DWStk addr offset check. Actual: %d, Expected: %d",
-                            pool_manager.dw_stk_control_blocks[dw_stk_idx].cb_pool_addr_ofs, expected_cb_pool_ofs);
+                    OPEEngineTestHelper::print_test_msg(
+                            TEST_TAG, "PASS: DWStk addr offset check. Actual: %d, Expected: %d", pool_manager.dw_stk_ctrl_blks[dw_stk_idx].cb_pool_addr_ofs, expected_cb_pool_ofs);
                 }
 
                 // stack pointer offset should still point to 0, no callbacks have been stored
-                if (pool_manager.dw_stk_control_blocks[dw_stk_idx].stk_ptr_ofs != 0)
+                if (pool_manager.dw_stk_ctrl_blks[dw_stk_idx].stk_ptr_ofs != 0)
                 {
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: DWStk stack pointer offset non-zero before any callbacks stored.");
                     return false;
@@ -629,7 +630,7 @@ namespace opee
                 }
 
                 // stack size should be DWStkSz
-                if (pool_manager.dw_stk_control_blocks[dw_stk_idx].stk_sz != DWStkSz)
+                if (pool_manager.dw_stk_ctrl_blks[dw_stk_idx].stk_sz != DWStkSz)
                 {
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: DWStk size within respective dw_stk_control_block not equal to assigned value.");
                 }
@@ -651,11 +652,9 @@ namespace opee
                             TEST_TAG, "PASS: Allocator offset check. Actual: %d, Expected: %d", pool_manager.allocator_ofs, (allocator_ofs_before_allocation + DWStkSz));
                 }
 
-                opee_uint8_t guard_byte_0 =
-                        pool_manager.cb_pool[pool_manager.dw_stk_control_blocks[dw_stk_idx].cb_pool_addr_ofs + pool_manager.dw_stk_control_blocks[dw_stk_idx].stk_sz - 1];
+                opee_uint8_t guard_byte_0 = pool_manager.cb_pool[pool_manager.dw_stk_ctrl_blks[dw_stk_idx].cb_pool_addr_ofs + pool_manager.dw_stk_ctrl_blks[dw_stk_idx].stk_sz - 1];
 
-                opee_uint8_t guard_byte_1 =
-                        pool_manager.cb_pool[pool_manager.dw_stk_control_blocks[dw_stk_idx].cb_pool_addr_ofs + pool_manager.dw_stk_control_blocks[dw_stk_idx].stk_sz - 2];
+                opee_uint8_t guard_byte_1 = pool_manager.cb_pool[pool_manager.dw_stk_ctrl_blks[dw_stk_idx].cb_pool_addr_ofs + pool_manager.dw_stk_ctrl_blks[dw_stk_idx].stk_sz - 2];
 
                 // check guard bytes
                 if ((guard_byte_0 != opee::CbPoolManager<OPEEconfigMAX_DATA_WATCH_CNT>::DW_STK_GUARD_BYTE) ||
@@ -675,18 +674,18 @@ namespace opee
                 return true;
             }
 
-            template <size_t CbWrprMaxSz, typename TArg, typename TLambda>
-            static bool store_cb_helper(TLambda&& lambda, const char* TEST_TAG, opee::SubscriberCtrlBlock* subscribers, opee_uint8_t& sub_count, const opee_size_t dw_stk)
+            template <opee_size_t CbWrprMaxSz, typename TArg, typename TLambda>
+            static bool store_cb_helper(TLambda&& lambda, const char* TEST_TAG, opee::SubCtrlBlk* subscribers, opee_uint8_t& sub_count, const opee_size_t dw_stk)
             {
                 opee::CbPoolManager<OPEEconfigMAX_DATA_WATCH_CNT>& pool_manager = opee::CbHelper<OPEEconfigMAX_DATA_WATCH_CNT>::get_manager();
 
                 using TCb = std::decay_t<TLambda>; // get the actual type of the lambda by stripping it of references with decay
 
-                CbWrapperDefined<TArg, TCb> cb_wrpr(std::forward<TLambda>(lambda)); // create a temp wrapper object on stack to store callback
+                CbWrprDefined<TArg, TCb> cb_wrpr(std::forward<TLambda>(lambda)); // create a temp wrapper object on stack to store callback
 
-                size_t bytes2allocate = sizeof(CbWrapperDefined<TArg, TCb>);
+                opee_size_t bytes2allocate = sizeof(CbWrprDefined<TArg, TCb>);
                 opee_size_t sub_count_before_allocation = sub_count;
-                opee_size_t dw_stk_stack_pointer_ofs_before_allocation = pool_manager.dw_stk_control_blocks[dw_stk].stk_ptr_ofs;
+                opee_size_t dw_stk_stack_pointer_ofs_before_allocation = pool_manager.dw_stk_ctrl_blks[dw_stk].stk_ptr_ofs;
 
                 OPEEngineRes_t OPEEres = pool_manager.template store_cb<TArg, TCb, CbWrprMaxSz>(subscribers, sub_count, dw_stk, &cb_wrpr);
                 if (OPEEres != OPEE_OK)
@@ -710,7 +709,7 @@ namespace opee
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: sub count incrementaction check. Actual: %d Expected: %d", sub_count, (sub_count_before_allocation + 1));
                 }
 
-                opee_size_t actual_dw_stk_ptr_ofs = pool_manager.dw_stk_control_blocks[dw_stk].stk_ptr_ofs;
+                opee_size_t actual_dw_stk_ptr_ofs = pool_manager.dw_stk_ctrl_blks[dw_stk].stk_ptr_ofs;
                 opee_size_t expected_dw_stk_ptr_ofs = dw_stk_stack_pointer_ofs_before_allocation + CbWrprMaxSz;
 
                 if (actual_dw_stk_ptr_ofs != expected_dw_stk_ptr_ofs)
@@ -736,12 +735,12 @@ namespace opee
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: CbWrpr size check. Actual: %dbytes Expected: %dbytes", subscribers[sub_count - 1].data_sz, bytes2allocate);
                 }
 
-                opee_size_t cb_pool_addr_ofs = (pool_manager.dw_stk_control_blocks[dw_stk].stk_ptr_ofs + pool_manager.dw_stk_control_blocks[dw_stk].cb_pool_addr_ofs) - CbWrprMaxSz;
-                opee_uint8_t actual_checksum = opee::SubscriberCtrlBlock::create_checksum(cb_pool_addr_ofs, bytes2allocate, pool_manager.cb_pool);
+                opee_size_t cb_pool_addr_ofs = (pool_manager.dw_stk_ctrl_blks[dw_stk].stk_ptr_ofs + pool_manager.dw_stk_ctrl_blks[dw_stk].cb_pool_addr_ofs) - CbWrprMaxSz;
+                opee_uint8_t actual_checksum = opee::SubCtrlBlk::create_checksum(cb_pool_addr_ofs, bytes2allocate, pool_manager.cb_pool);
                 opee_uint8_t expected_checksum = subscribers[sub_count - 1].checksum;
 
                 // checksum validation
-                if (!opee::SubscriberCtrlBlock::validate_checksum(subscribers[sub_count - 1]))
+                if (!opee::SubCtrlBlk::validate_checksum(subscribers[sub_count - 1]))
                 {
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: checksum validation failed. Actual: %d Expected: %d", actual_checksum, expected_checksum);
                     return false;

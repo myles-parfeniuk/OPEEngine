@@ -20,6 +20,7 @@ extern "C" void app_main(void)
 {
     OPEEngineTestSuite::run_all_tests();
 
+    opee::OPEEngine_init();
     static Device d;
     static LED led(d, GPIO_NUM_25);
     static Button button(d, GPIO_NUM_18);

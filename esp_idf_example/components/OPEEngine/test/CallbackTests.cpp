@@ -1,12 +1,10 @@
 // third-party
 #include "unity.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/semphr.h"
-#include "freertos/event_groups.h"
 // OPEEngine
 #include "OPEEngineTestHelper.h"
 #include "../OPEEngineConfig.h"
+#include "../OPEEngine_freeRTOS_hook.h"
+#include "../core/OPEEngine.h"
 #include "../core/DataWatch.h"
 
 namespace opee
@@ -17,8 +15,9 @@ namespace opee
             static bool single_cb_test()
             {
                 const constexpr char* TEST_TAG = "single_cb_test";
-
                 const constexpr TickType_t CB_EXECUTION_TIMEOUT_MS = 5UL / portTICK_PERIOD_MS;
+
+                opee::OPEEngine_init();
 
                 SemaphoreHandle_t sem = xSemaphoreCreateBinary();
 
@@ -92,8 +91,10 @@ namespace opee
                 const constexpr EventBits_t CB_ALL_EXECUTED_BITS = (CB_0_EXECUTED_BIT | CB_1_EXECUTED_BIT | CB_2_EXECUTED_BIT);
                 const constexpr TickType_t CB_EXECUTION_TIMEOUT_MS = 5UL / portTICK_PERIOD_MS;
 
-                OPEEngineRes_t OPEEres[3] = {OPEE_CB_WRPR_CREATION_FAILED};
+                opee::OPEEngine_init();
+
                 EventGroupHandle_t evt_grp_data_to_set = xEventGroupCreate();
+                OPEEngineRes_t OPEEres[3] = {OPEE_CB_WRPR_CREATION_FAILED};
 
                 opee::DataWatch<bool, 128, 3> data_to_set(false);
                 opee::CbHelper<OPEEconfigMAX_DATA_WATCH_CNT>::init();
@@ -186,6 +187,8 @@ namespace opee
                 const constexpr TickType_t CB_EXECUTION_TIMEOUT_MS = 5UL / portTICK_PERIOD_MS;
                 const constexpr TickType_t SUB_TIMEOUT_MS = 5UL / portTICK_PERIOD_MS;
 
+                opee::OPEEngine_init();
+
                 EventGroupHandle_t evt_grp_data_to_set = xEventGroupCreate();
 
                 opee::DataWatch<bool, 128, 3> data_to_set(false);
@@ -260,8 +263,9 @@ namespace opee
             static bool self_set_test()
             {
                 const constexpr char* TEST_TAG = "self_set_test";
-
                 const constexpr TickType_t CB_EXECUTION_TIMEOUT_MS = 5UL / portTICK_PERIOD_MS;
+
+                opee::OPEEngine_init();
 
                 SemaphoreHandle_t sem = xSemaphoreCreateCounting(2, 2);
 
@@ -359,8 +363,9 @@ namespace opee
             static bool data_is_set_after_cbs_test()
             {
                 const constexpr char* TEST_TAG = "data_is_set_after_cbs_test";
-
                 const constexpr TickType_t CB_EXECUTION_TIMEOUT_MS = 5UL / portTICK_PERIOD_MS;
+
+                opee::OPEEngine_init();
 
                 SemaphoreHandle_t sem = xSemaphoreCreateCounting(2, 2);
 

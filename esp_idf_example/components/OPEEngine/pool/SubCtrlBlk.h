@@ -2,30 +2,29 @@
 // OPEEngine
 #include "OPEEngine_types.h"
 #include "CbPool.h"
-#include "CbWrapperGeneric.h"
-#include "DataWatchStackCtrlBlock.h"
+#include "CbWrprGeneric.h"
 
 namespace opee
 {
-    class SubscriberCtrlBlock
+    class SubCtrlBlk
     {
         public:
-            SubscriberCtrlBlock()
+            SubCtrlBlk()
                 : cb_pool_addr_ofs(0U)
                 , data_sz(0U)
                 , checksum(0U)
                 , _cb_pool(nullptr)
-                , cb_wrpr(nullptr)
+                , _cb_wrpr(nullptr)
                 , muted(true)
             {
             }
 
-            SubscriberCtrlBlock(opee_size_t dw_stk_addr_offs, opee_size_t data_sz, opee_size_t checksum, CbPool<OPEEconfigCB_POOL_SZ>* _cb_pool, CbWrapperGeneric* cb_wrpr)
+            SubCtrlBlk(opee_size_t dw_stk_addr_offs, opee_size_t data_sz, opee_size_t checksum, CbPool<OPEEconfigCB_POOL_SZ>* _cb_pool, CbWrprGeneric* _cb_wrpr)
                 : cb_pool_addr_ofs(dw_stk_addr_offs)
                 , data_sz(data_sz)
                 , checksum(checksum)
                 , _cb_pool(_cb_pool)
-                , cb_wrpr(cb_wrpr)
+                , _cb_wrpr(_cb_wrpr)
                 , muted(false)
             {
             }
@@ -40,13 +39,13 @@ namespace opee
                 return checksum;
             }
 
-            static bool validate_checksum(const SubscriberCtrlBlock& ctrl_blk)
+            static bool validate_checksum(const SubCtrlBlk& ctrl_blk)
             {
                 opee_uint8_t checksum = create_checksum(ctrl_blk.cb_pool_addr_ofs, ctrl_blk.data_sz, *ctrl_blk._cb_pool);
                 return (checksum == ctrl_blk.checksum);
             }
 
-            template <size_t Bytes2Allocate, size_t CbWrprMaxSz>
+            template <opee_size_t Bytes2Allocate, opee_size_t CbWrprMaxSz>
             static constexpr void check_cb_wrpr_sz()
             {
                 static_assert(Bytes2Allocate <= CbWrprMaxSz, "CbWrapper size exceeds CbWrprMaxSz, increase on subscribe call.");
@@ -56,7 +55,7 @@ namespace opee
             opee_size_t data_sz;                    ///< size of stored callback in bytes (excludes checksum byte)
             opee_uint8_t checksum;                  ///< check sum byte
             CbPool<OPEEconfigCB_POOL_SZ>* _cb_pool; ///< CB Pool access for checksum validation
-            CbWrapperGeneric* cb_wrpr;              ///< pointer to callback wrapper in cb_pool
+            CbWrprGeneric* _cb_wrpr;                ///< pointer to callback wrapper in cb_pool
             bool muted;                             ///< if true this callback will not be executed even if DataWatch::set is called
     };
 } // namespace opee

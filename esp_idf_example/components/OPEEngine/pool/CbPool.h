@@ -5,7 +5,7 @@
 
 namespace opee
 {
-    template <size_t CbPoolSz>
+    template <opee_size_t CbPoolSz>
     class CbPool
     {
         private:
@@ -15,6 +15,12 @@ namespace opee
             opee_uint8_t* begin()
             {
                 return cb_pool;
+            }
+
+            void reset()
+            {
+                for (opee_ssize_t i = 0; i < CbPoolSz; i++)
+                    cb_pool[i] = 0U;
             }
 
             // overloaded [] operator for const access (read-only)

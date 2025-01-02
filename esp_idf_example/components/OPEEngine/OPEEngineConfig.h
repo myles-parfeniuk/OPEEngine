@@ -1,7 +1,5 @@
 #pragma once
 
-// std lib
-#include <stdint.h>
 // OPEEngine
 #include "OPEEngine_types.h"
 
