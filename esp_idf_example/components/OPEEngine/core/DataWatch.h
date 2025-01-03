@@ -1,10 +1,9 @@
 #pragma once
 
-// std lib
-#include <iostream>
 // OPEEngine
 #include "OPEEngine_types.h"
 #include "CbHelper.h"
+#include "ForwardUtil.h"
 #include "SubCtrlBlk.h"
 #include "Subscriber.h"
 
@@ -35,7 +34,7 @@ namespace opee
             template <opee_size_t CbWrprMaxSz, typename TLambda>
             OPEEngineRes_t subscribe(TLambda&& lambda, Subscriber<TArg>* sub_interface = nullptr)
             {
-                using TCb = std::decay_t<TLambda>; // get the actual type of the lambda by stripping it of references with decay
+                using TCb = ForwardUtil::decay_t<TLambda>; // get the actual type of the lambda by stripping it of references with decay
 
                 // ensure respective DWStk allocated correctly
                 if (dw_stk_alloc_res != OPEE_OK)
@@ -44,7 +43,7 @@ namespace opee
                 // check if the max amount of subscribers has been reached
                 if (sub_count < CbMaxCnt)
                 {
-                    CbWrprDefined<TArg, TCb> cb_wrpr(std::forward<TLambda>(lambda)); // create a temp wrapper object on stack to store callback
+                    CbWrprDefined<TArg, TCb> cb_wrpr(ForwardUtil::forward<TLambda>(lambda)); // create a temp wrapper object on stack to store callback
 
                     OPEEngineRes_t OPEEres = pool_manager.template store_cb<TArg, TCb, CbWrprMaxSz>(subscribers, sub_count, dw_stk, &cb_wrpr);
 

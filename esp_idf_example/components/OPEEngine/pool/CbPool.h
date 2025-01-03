@@ -2,6 +2,7 @@
 
 // OPEEngine
 #include "OPEEngine_types.h"
+#include "esp_log.h"
 
 namespace opee
 {
@@ -9,6 +10,7 @@ namespace opee
     class CbPool
     {
         private:
+            static constexpr const char* TAG = "CbPool"; ///< Class tag for debug logs.
             opee_uint8_t cb_pool[CbPoolSz];
 
         public:
@@ -42,3 +44,9 @@ namespace opee
             }
     };
 } // namespace opee
+
+// overloaded new operator for placement new (construction of objects directly in cb_pool)
+inline void* operator new(opee_size_t size, opee_uint8_t* ptr)
+{
+    return static_cast<void*>(ptr);
+}
