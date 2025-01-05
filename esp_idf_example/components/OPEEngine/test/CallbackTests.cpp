@@ -267,7 +267,7 @@ namespace opee
 
                 opee::OPEEngine_init();
 
-                SemaphoreHandle_t sem = xSemaphoreCreateCounting(2, 2);
+                SemaphoreHandle_t sem = xSemaphoreCreateCounting(2, 0);
 
                 opee::DataWatch<opee_uint8_t, 32, 1> data_to_set(0U);
                 opee::CbHelper<OPEEconfigMAX_DATA_WATCH_CNT>::init();
@@ -347,7 +347,7 @@ namespace opee
 
                 if (data_to_set.get() != 2U)
                 {
-                    OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: incorrect data after callback execution");
+                    OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: incorrect data after callback execution: Actual %d Expected %d", data_to_set.get(), 2U);
                     return false;
                 }
                 else
@@ -367,7 +367,7 @@ namespace opee
 
                 opee::OPEEngine_init();
 
-                SemaphoreHandle_t sem = xSemaphoreCreateCounting(2, 2);
+                SemaphoreHandle_t sem = xSemaphoreCreateBinary();
 
                 opee::DataWatch<opee_uint8_t, 32, 1> data_to_set(0U);
                 opee::CbHelper<OPEEconfigMAX_DATA_WATCH_CNT>::init();

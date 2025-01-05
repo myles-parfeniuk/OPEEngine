@@ -1,0 +1,11 @@
+{
+    "cortex-debug.armToolchainPath": "C:/gcc-arm-none-eabi-10.3-2021.10/bin",
+    "files.associations": {
+        "main.h": "c",
+        "cstdint": "cpp",
+        "type_traits": "cpp",
+        "xutility": "cpp",
+        "cstddef": "cpp"
+    },
+  
+}
