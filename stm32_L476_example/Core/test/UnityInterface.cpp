@@ -1,4 +1,4 @@
-#include "UnitySerialService.h"
+#include "UnityInterface.h"
 
 /* This is the C version of Test_putchar */
 void Test_putchar(int c)

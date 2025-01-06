@@ -4,8 +4,9 @@
 extern "C" {
 #endif
 
-#include "usart.h"
 #include "stdint.h"
+#include "usart.h"
+
 
 /* Override UNITY_OUTPUT_CHAR */
 #define UNITY_OUTPUT_CHAR(a) Test_putchar(a)

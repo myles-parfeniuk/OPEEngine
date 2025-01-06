@@ -9,7 +9,7 @@
 #pragma once
 
 // third party
-#include "UnitySerialService.h"
+#include "UnityInterface.h"
 #include "unity.h"
 // OPEEngine
 #include "CallbackTests.h"

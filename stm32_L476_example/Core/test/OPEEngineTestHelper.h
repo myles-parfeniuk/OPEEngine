@@ -11,12 +11,12 @@
 #include <stdarg.h>
 
 // third-party
-#include "UnitySerialService.h"
+#include "UnityInterface.h"
 #include "unity.h"
 // OPEEngine
 #include "OPEEngine_freeRTOS_hook.h"
 // Device Specific
-#include "SerialService.h"
+#include "SerialService.h" 
 
 /**
  * @class OPEEngineTestHelper
@@ -56,7 +56,5 @@ public:
 
             xSemaphoreGive(print_lock);
         }
-
-
     }
 };

@@ -1,5 +1,5 @@
 // third-party
-#include "UnitySerialService.h"
+#include "UnityInterface.h"
 #include "unity.h"
 // OPEEngine
 #include "PoolManagerTests.h"
