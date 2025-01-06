@@ -263,11 +263,13 @@ namespace opee
             static bool self_set_test()
             {
                 const constexpr char* TEST_TAG = "self_set_test";
+                const constexpr EventBits_t CB_EXECUTED_BIT = 1U << 0U;
+                const constexpr EventBits_t CB_EXECUTED_RECURSIVELY_BIT = 1U << 1U;
                 const constexpr TickType_t CB_EXECUTION_TIMEOUT_MS = 5UL / portTICK_PERIOD_MS;
 
                 opee::OPEEngine_init();
 
-                SemaphoreHandle_t sem = xSemaphoreCreateCounting(2, 0);
+                EventGroupHandle_t evt_grp_data_to_set = xEventGroupCreate();
 
                 opee::DataWatch<opee_uint8_t, 32, 1> data_to_set(0U);
                 opee::CbHelper<OPEEconfigMAX_DATA_WATCH_CNT>::init();
@@ -283,7 +285,7 @@ namespace opee
                 }
 
                 OPEEngineRes_t OPEEres = data_to_set.subscribe<16>(
-                        [&data_to_set, &sem](opee_uint8_t new_data)
+                        [&data_to_set, &evt_grp_data_to_set](opee_uint8_t new_data)
                         {
                             static opee_uint8_t execution_count = 0U;
 
@@ -293,14 +295,15 @@ namespace opee
                             {
                                 OPEEngineTestHelper::print_test_msg(TEST_TAG, "Cb Executed: new_data: %d", new_data);
 
-                                if (data_to_set.get() != 2U)
+                                if (new_data == 1U)
                                 {
-                                    if (data_to_set.set(2U) == OPEE_OK) // execute callback "recursively" (not actually, cb should be invoked from separate task)
-                                        xSemaphoreGive(sem);
+                                    xEventGroupSetBits(evt_grp_data_to_set, CB_EXECUTED_BIT);
+                                    data_to_set.set(2U);
                                 }
-                                else
+                                else if (new_data == 2U)
                                 {
-                                    xSemaphoreGive(sem);
+                                    execution_count = 0U;
+                                    xEventGroupSetBits(evt_grp_data_to_set, CB_EXECUTED_RECURSIVELY_BIT);
                                 }
                             }
                         });
@@ -325,24 +328,26 @@ namespace opee
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: set data & queue cb check.");
                 }
 
-                if (xSemaphoreTake(sem, CB_EXECUTION_TIMEOUT_MS) != pdTRUE)
+                EventBits_t res = xEventGroupWaitBits(evt_grp_data_to_set, CB_EXECUTED_BIT, pdFALSE, pdFALSE, CB_EXECUTION_TIMEOUT_MS);
+                if (!(res & CB_EXECUTED_BIT))
                 {
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: first callback execution not detected");
                     return false;
                 }
                 else
                 {
-                    OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: cb execution check 1.");
+                    OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: cb execution check.");
                 }
 
-                if (xSemaphoreTake(sem, CB_EXECUTION_TIMEOUT_MS) != pdTRUE)
+                res = xEventGroupWaitBits(evt_grp_data_to_set, CB_EXECUTED_RECURSIVELY_BIT, pdFALSE, pdFALSE, CB_EXECUTION_TIMEOUT_MS);
+                if (!(res & CB_EXECUTED_BIT))
                 {
-                    OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: second callback execution not detected");
+                    OPEEngineTestHelper::print_test_msg(TEST_TAG, "FAIL: recursive callback execution not detected");
                     return false;
                 }
                 else
                 {
-                    OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: cb execution check 2.");
+                    OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: cb recursive execution check.");
                 }
 
                 if (data_to_set.get() != 2U)
@@ -355,7 +360,7 @@ namespace opee
                     OPEEngineTestHelper::print_test_msg(TEST_TAG, "PASS: data check.");
                 }
 
-                vSemaphoreDelete(sem);
+                vEventGroupDelete(evt_grp_data_to_set);
 
                 return true;
             }

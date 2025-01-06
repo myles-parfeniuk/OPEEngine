@@ -5,7 +5,13 @@
         "cstdint": "cpp",
         "type_traits": "cpp",
         "xutility": "cpp",
-        "cstddef": "cpp"
+        "cstddef": "cpp",
+        "chrono": "cpp",
+        "future": "cpp",
+        "system_error": "cpp",
+        "xlocale": "cpp",
+        "unityserialservice.h": "c",
+        "serialservice.h": "c"
     },
   
 }

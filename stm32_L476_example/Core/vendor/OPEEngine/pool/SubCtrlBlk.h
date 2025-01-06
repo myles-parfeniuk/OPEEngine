@@ -41,7 +41,11 @@ namespace opee
 
             static bool validate_checksum(const SubCtrlBlk& ctrl_blk)
             {
-                opee_uint8_t checksum = create_checksum(ctrl_blk.cb_pool_addr_ofs, ctrl_blk.data_sz, *ctrl_blk._cb_pool);
+                opee_uint8_t checksum = 0U;
+
+                if (ctrl_blk._cb_pool != nullptr)
+                    checksum = create_checksum(ctrl_blk.cb_pool_addr_ofs, ctrl_blk.data_sz, *ctrl_blk._cb_pool);
+
                 return (checksum == ctrl_blk.checksum);
             }
 

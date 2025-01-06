@@ -8,37 +8,50 @@
 #include "queue.h"
 #include "gpio.h"
 #include "usart.h"
+#include "OPEEngineTestSuite.h"
 #include "OPEEngine.h"
 
 static const constexpr char *TAG = "Main";
 
 void test_task(void *arg);
+void idle_task(void *arg);
 
 int app_main()
 {
     SerialService::init(&huart2);
-    opee::OPEEngine_init();
+
+    /*opee::OPEEngine_init();
 
     static Device d;
 
     d.usr_button.subscribe<16>([](ButtonEvent new_event)
-                               { 
-                                const constexpr char*CB_TAG = "CB_0";  
+                               {
+                                const constexpr char*CB_TAG = "CB_0";
                                 SerialService::print_log_ln(TAG, "%s: %s", CB_TAG, ButtonEvent_to_str(new_event)); });
 
     d.usr_button.subscribe<16>([](ButtonEvent new_event)
-                               {   const constexpr char*CB_TAG = "CB_1";  
+                               {   const constexpr char*CB_TAG = "CB_1";
                                 SerialService::print_log_ln(TAG, "%s: %s", CB_TAG, ButtonEvent_to_str(new_event)); });
 
     d.usr_button.subscribe<16>([](ButtonEvent new_event)
-                               {   const constexpr char*CB_TAG = "CB_2";  
-                                SerialService::print_log_ln(TAG, "%s: %s", CB_TAG, ButtonEvent_to_str(new_event)); });
+                               {   const constexpr char*CB_TAG = "CB_2";
+                                SerialService::print_log_ln(TAG, "%s: %s", CB_TAG, ButtonEvent_to_str(new_event)); }); */
+
+    /* xTaskCreate(
+         test_task,
+         "TestTask",
+         128,
+         &d,
+         1,
+         NULL);
+
+     */
 
     xTaskCreate(
-        test_task,
-        "TestTask",
-        128,
-        &d,
+        idle_task,
+        "IdleTask",
+        4 * 256,
+        NULL,
         1,
         NULL);
 
@@ -61,5 +74,15 @@ void test_task(void *arg)
         vTaskDelay(1000 / portTICK_PERIOD_MS);
         _d->usr_button.set(ButtonEvent::release);
         vTaskDelay(1000 / portTICK_PERIOD_MS);
+    }
+}
+
+void idle_task(void *arg)
+{
+
+    while (1)
+    {
+        OPEEngineTestSuite::run_all_tests();
+        vTaskDelay(2000UL / portTICK_PERIOD_MS);
     }
 }

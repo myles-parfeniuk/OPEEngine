@@ -26,15 +26,6 @@ namespace opee
             {
             }
 
-            void release_subscribers()
-            {
-                if (_subscribers != nullptr)
-                    for (opee_ssize_t i = 0; i < max_sub_cnt; i++)
-                    {
-                        _subscribers[i] = SubCtrlBlk();
-                    }
-            }
-
             template <opee_size_t DWStkSz>
             static constexpr void check_dw_stk_sz()
             {

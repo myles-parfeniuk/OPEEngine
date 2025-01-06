@@ -45,6 +45,10 @@ namespace opee
                 }
             }
 
+            ~DataWatch()
+            {
+            }
+
             template <opee_size_t CbWrprMaxSz, typename TLambda>
             OPEEngineRes_t subscribe(TLambda&& lambda, Subscriber<TArg>* sub_interface = nullptr)
             {

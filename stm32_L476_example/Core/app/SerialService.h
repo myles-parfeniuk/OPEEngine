@@ -93,6 +93,14 @@ public:
         return (tx_res == HAL_OK);
     }
 
+       static bool putchar(uint8_t char2put)
+       {
+            HAL_StatusTypeDef tx_res = HAL_ERROR;
+            tx_res = HAL_UART_Transmit(hdl_uart, &char2put, 1, TX_TIMEOUT_TICKS);
+
+            return (tx_res == HAL_OK);
+       }
+
     static const constexpr uint16_t MAX_STR_SZ = 100U; ///< max string size in bytes that can be sent over queue
 
 private:

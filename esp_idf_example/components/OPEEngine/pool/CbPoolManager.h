@@ -44,9 +44,6 @@ namespace opee
                 allocator_ofs = 0U;
 
                 for (opee_size_t i = 0; i < DWMaxCnt; i++)
-                    dw_stk_ctrl_blks[i].release_subscribers();
-
-                for (opee_size_t i = 0; i < DWMaxCnt; i++)
                     dw_stk_ctrl_blks[i] = DWStkCtrlBlk();
 
                 cb_pool.reset();
